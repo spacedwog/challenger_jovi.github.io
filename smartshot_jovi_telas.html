@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartShot JOVI — Protótipo Web Mobile</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-deep:#040b1c;
+    --bg:#081530;
+    --bg-card:#0c1d40;
+    --surface:#142a55;
+    --line:rgba(120,160,255,.18);
+    --blue:#1f6bff;
+    --blue-glow:#3d83ff;
+    --cyan:#5fc8ff;
+    --green:#22c55e;
+    --amber:#f59e0b;
+    --red:#ef4444;
+    --text:#eaf1ff;
+    --text-mute:#8aa0c8;
+    --pink:#ef4779;
+    --purple:#a855f7;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg-deep);color:var(--text);font-family:'Inter Tight',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  body{
+    background:
+      radial-gradient(1200px 600px at 10% -10%, rgba(31,107,255,.18), transparent 60%),
+      radial-gradient(900px 500px at 110% 20%, rgba(95,200,255,.12), transparent 60%),
+      radial-gradient(700px 500px at 50% 120%, rgba(168,85,247,.10), transparent 60%),
+      var(--bg-deep);
+    min-height:100vh;
+    padding:48px 24px 80px;
+  }
+
+  /* PAGE HEADER */
+  .page-head{max-width:1400px;margin:0 auto 56px}
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:10px;
+    padding:8px 16px;border-radius:999px;
+    background:rgba(31,107,255,.12);border:1px solid rgba(31,107,255,.35);
+    font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--cyan);font-weight:600
+  }
+  .eyebrow::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--cyan);box-shadow:0 0 12px var(--cyan)}
+  .page-head h1{
+    font-family:'Bricolage Grotesque',sans-serif;
+    font-weight:700;font-size:clamp(36px,5vw,64px);line-height:1.02;letter-spacing:-.02em;
+    margin-top:18px;
+  }
+  .page-head h1 em{font-style:normal;background:linear-gradient(90deg,var(--cyan),var(--blue-glow));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .page-head p{color:var(--text-mute);max-width:720px;margin-top:14px;font-size:17px;line-height:1.55}
+  .badges{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
+  .badge{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:8px 14px;border-radius:10px;
+    background:rgba(255,255,255,.04);border:1px solid var(--line);
+    font-size:13px;color:var(--text-mute);font-weight:500
+  }
+  .badge svg{width:14px;height:14px;color:var(--cyan)}
+
+  /* GRID */
+  .grid{
+    max-width:1400px;margin:0 auto;
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));
+    gap:40px 32px;
+  }
+  .screen{display:flex;flex-direction:column;align-items:center;gap:18px}
+  .screen-label{
+    width:100%;display:flex;align-items:baseline;gap:12px;padding:0 4px;
+  }
+  .screen-num{
+    font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:42px;
+    background:linear-gradient(180deg,var(--blue-glow),rgba(61,131,255,.3));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    line-height:1;letter-spacing:-.04em
+  }
+  .screen-meta h3{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:20px;letter-spacing:-.01em}
+  .screen-meta p{color:var(--text-mute);font-size:13px;margin-top:2px}
+
+  /* BROWSER CHROME (mobile) */
+  .browser{
+    width:100%;max-width:360px;
+    background:#0f1a35;
+    border-radius:32px;
+    border:1px solid rgba(120,160,255,.22);
+    box-shadow:
+      0 30px 80px rgba(0,0,0,.55),
+      0 8px 24px rgba(31,107,255,.18),
+      inset 0 0 0 1px rgba(255,255,255,.03);
+    overflow:hidden;
+    display:flex;flex-direction:column;
+  }
+  .browser-bar{
+    background:#1a2748;padding:10px 14px 12px;
+    border-bottom:1px solid rgba(120,160,255,.12);
+    display:flex;flex-direction:column;gap:10px;
+  }
+  .browser-bar .dots{display:flex;gap:6px}
+  .browser-bar .dots span{width:10px;height:10px;border-radius:50%;background:#2c3a5e}
+  .browser-bar .dots span:nth-child(1){background:#ff5f57}
+  .browser-bar .dots span:nth-child(2){background:#febc2e}
+  .browser-bar .dots span:nth-child(3){background:#28c840}
+  .url-pill{
+    background:#0a142e;border:1px solid rgba(120,160,255,.18);
+    border-radius:999px;padding:8px 14px;display:flex;align-items:center;gap:8px;
+    font-size:12px;color:var(--text-mute);font-family:'Inter Tight',sans-serif;
+  }
+  .url-pill svg{width:12px;height:12px;color:var(--green);flex-shrink:0}
+  .url-pill .domain{color:#dde7ff;font-weight:500}
+  .url-pill .path{opacity:.6}
+  .url-pill .more{margin-left:auto;opacity:.5}
+
+  /* PHONE VIEWPORT (mobile-first webapp content) */
+  .viewport{
+    background:#000;aspect-ratio:9/19.5;position:relative;overflow:hidden;
+    font-family:'Inter Tight',sans-serif;color:#fff;
+  }
+  .status-bar{
+    position:absolute;top:0;left:0;right:0;height:32px;
+    display:flex;align-items:center;justify-content:space-between;padding:8px 18px 0;
+    font-size:12px;font-weight:600;z-index:30;color:#fff;
+  }
+  .status-bar .icons{display:flex;gap:5px;align-items:center}
+  .status-bar svg{width:14px;height:14px}
+
+  /* ===== SCREEN 1: Câmera viewfinder ===== */
+  .vp-camera{
+    background:
+      linear-gradient(180deg,#0a1530 0%,#0a1530 100%);
+    height:100%;display:flex;flex-direction:column;
+  }
+  .cam-hud{
+    position:relative;z-index:20;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:44px 16px 12px;color:#fff;font-size:12px;font-weight:600;
+  }
+  .cam-hud .chip{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;background:rgba(0,0,0,.45);backdrop-filter:blur(8px)}
+  .cam-hud .chip.ai{background:linear-gradient(135deg,var(--blue),var(--cyan));color:#fff;box-shadow:0 0 18px rgba(31,107,255,.55)}
+  .cam-hud svg{width:14px;height:14px}
+  .viewfinder{
+    flex:1;position:relative;margin:0 12px;border-radius:18px;overflow:hidden;
+    background:
+      radial-gradient(ellipse at 50% 35%, #c98c6a 0%, #8a4f3a 22%, #4a2a30 45%, #1a1830 70%, #0a0f24 100%);
+  }
+  .viewfinder::before{
+    content:"";position:absolute;inset:0;
+    background:
+      radial-gradient(circle at 50% 40%, rgba(255,200,170,.55) 0%, transparent 18%),
+      radial-gradient(circle at 50% 70%, rgba(255,180,140,.4) 0%, transparent 30%),
+      linear-gradient(180deg,transparent 0%, rgba(0,0,0,.4) 100%);
+  }
+  .viewfinder::after{
+    content:"";position:absolute;inset:0;
+    background:
+      linear-gradient(180deg,rgba(135,180,255,.25) 0%, transparent 35%);
+  }
+  .vf-overlay-text{
+    position:absolute;top:14px;left:14px;
+    background:rgba(0,0,0,.55);backdrop-filter:blur(10px);
+    padding:6px 12px;border-radius:8px;font-size:11px;font-weight:600;color:#fff;
+    border:1px solid rgba(255,255,255,.12);
+  }
+  .vf-overlay-text small{display:block;color:var(--cyan);font-size:9px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px}
+  .cam-controls{
+    padding:18px 20px 32px;
+    display:flex;flex-direction:column;gap:14px;align-items:center;
+    background:#000;
+  }
+  .smartshot-cta{
+    width:100%;padding:14px 18px;
+    border-radius:999px;
+    background:linear-gradient(135deg,var(--blue) 0%,var(--blue-glow) 100%);
+    box-shadow:0 8px 24px rgba(31,107,255,.45),inset 0 1px 0 rgba(255,255,255,.25);
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    font-weight:700;font-size:14px;color:#fff;
+  }
+  .smartshot-cta svg{width:16px;height:16px}
+  .cam-actions{display:flex;align-items:center;justify-content:space-between;width:100%;padding:0 4px}
+  .thumb-prev{
+    width:42px;height:42px;border-radius:10px;
+    background:linear-gradient(135deg,#3a5a8c,#1a2848);
+    border:2px solid rgba(255,255,255,.2);
+  }
+  .shutter{
+    width:64px;height:64px;border-radius:50%;
+    background:#fff;border:4px solid #fff;
+    box-shadow:0 0 0 3px #000, 0 0 0 5px #fff;
+  }
+  .flip{width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center}
+  .flip svg{width:20px;height:20px;color:#fff}
+
+  /* ===== SCREEN 2: Modos ===== */
+  .vp-modes{height:100%;position:relative;background:#0a1530}
+  .vp-modes .viewfinder-bg{
+    position:absolute;inset:0;
+    background:
+      radial-gradient(ellipse at 50% 30%, #c98c6a 0%, #8a4f3a 22%, #4a2a30 45%, #1a1830 70%, #0a0f24 100%);
+    filter:blur(2px) brightness(.6);
+  }
+  .modes-sheet{
+    position:absolute;left:12px;right:12px;bottom:24px;
+    background:#fff;color:#0a1530;border-radius:24px;padding:18px 16px 20px;
+    box-shadow:0 -20px 40px rgba(0,0,0,.4);
+  }
+  .modes-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+  .modes-head .title{display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px}
+  .modes-head .title svg{width:16px;height:16px;color:var(--blue)}
+  .modes-head .close{width:24px;height:24px;display:flex;align-items:center;justify-content:center;color:#5a6580}
+  .modes-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .mode-cell{
+    aspect-ratio:1;background:#f3f6fc;border-radius:14px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+    font-size:11px;font-weight:600;color:#0a1530;
+    border:2px solid transparent;transition:all .2s;
+  }
+  .mode-cell.active{
+    background:rgba(31,107,255,.10);border-color:var(--blue);color:var(--blue);
+  }
+  .mode-cell svg{width:22px;height:22px}
+  .apply-btn{
+    margin-top:14px;width:100%;padding:14px;border-radius:14px;
+    background:linear-gradient(135deg,var(--blue) 0%,var(--blue-glow) 100%);
+    color:#fff;font-weight:700;font-size:14px;text-align:center;
+    box-shadow:0 8px 20px rgba(31,107,255,.35);
+  }
+
+  /* ===== SCREEN 3: Orientação tempo real ===== */
+  .vp-guide{height:100%;display:flex;flex-direction:column;background:#000;position:relative}
+  .vp-guide .vf{
+    flex:1;position:relative;overflow:hidden;
+    background:
+      radial-gradient(ellipse at 50% 35%, #d49a78 0%, #9a5a40 22%, #5a3038 50%, #1a1830 75%, #0a0f24 100%);
+  }
+  .vp-guide .vf::before{
+    content:"";position:absolute;inset:0;
+    background:radial-gradient(circle at 52% 42%, rgba(255,200,170,.5) 0%, transparent 22%);
+  }
+  .mode-pill{
+    position:absolute;top:54px;left:14px;
+    background:#fff;color:#0a1530;border-radius:12px;padding:8px 12px;font-size:11px;font-weight:700;
+    box-shadow:0 4px 12px rgba(0,0,0,.3);display:flex;flex-direction:column;line-height:1.2;
+  }
+  .mode-pill small{color:var(--text-mute);font-size:9px;font-weight:500;text-transform:uppercase;letter-spacing:.08em}
+  .pose-outline{
+    position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);
+    width:140px;height:200px;
+    border:2px dashed var(--cyan);border-radius:50% 50% 45% 45%/55% 55% 45% 45%;
+    box-shadow:0 0 24px rgba(95,200,255,.4),inset 0 0 24px rgba(95,200,255,.15);
+  }
+  .light-meter{
+    position:absolute;right:12px;top:50%;transform:translateY(-50%);
+    display:flex;flex-direction:column;gap:3px;align-items:center;
+  }
+  .light-meter .bar{width:6px;height:8px;border-radius:2px;background:rgba(255,255,255,.25)}
+  .light-meter .bar.on{background:var(--green);box-shadow:0 0 6px rgba(34,197,94,.6)}
+  .feedback-card{
+    position:absolute;left:14px;right:14px;bottom:90px;
+    background:#fff;color:#0a1530;border-radius:14px;padding:12px 14px;
+    box-shadow:0 8px 24px rgba(0,0,0,.4);
+  }
+  .fb-row{display:flex;align-items:center;gap:10px;font-size:12px;font-weight:600;padding:6px 0}
+  .fb-row + .fb-row{border-top:1px solid #eef1f8}
+  .fb-icon{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff;font-size:11px;font-weight:800}
+  .fb-icon.ok{background:var(--green)}
+  .fb-icon.warn{background:var(--amber)}
+  .quality-tag{
+    position:absolute;left:50%;bottom:60px;transform:translateX(-50%);
+    background:rgba(0,0,0,.65);backdrop-filter:blur(8px);
+    padding:6px 14px;border-radius:999px;font-size:11px;font-weight:600;
+    border:1px solid rgba(255,255,255,.15);
+  }
+  .quality-tag b{color:var(--green);margin-left:4px}
+  .vp-guide .cam-controls{padding:14px 20px 26px}
+
+  /* ===== SCREEN 4: Pós-Captura ===== */
+  .vp-post{height:100%;display:flex;flex-direction:column;background:#0a1530}
+  .post-head{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:44px 18px 10px;color:#fff;font-size:13px;
+  }
+  .post-head svg{width:18px;height:18px;color:#fff}
+  .post-photo{
+    flex:1;position:relative;margin:0 14px;border-radius:18px;overflow:hidden;
+    background:radial-gradient(ellipse at 50% 35%, #c98c6a 0%, #8a4f3a 22%, #4a2a30 45%, #1a1830 70%);
+    box-shadow:0 12px 32px rgba(0,0,0,.45);
+  }
+  .post-actions{
+    margin:14px 14px 0;background:#fff;border-radius:20px;padding:16px;color:#0a1530;
+  }
+  .quick-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+  .quick-btn{
+    display:flex;flex-direction:column;align-items:center;gap:6px;
+    padding:10px 4px;border-radius:12px;background:#f3f6fc;
+    font-size:10px;font-weight:600;color:#0a1530;text-align:center;line-height:1.1;
+  }
+  .quick-btn .ico{
+    width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    background:rgba(31,107,255,.10);color:var(--blue);
+  }
+  .quick-btn .ico svg{width:18px;height:18px}
+  .info-line{display:flex;align-items:center;gap:8px;font-size:11px;padding:8px 4px;border-top:1px solid #eef1f8;color:#4a5575;font-weight:500}
+  .info-line .dot{width:8px;height:8px;border-radius:50%}
+  .info-line .dot.green{background:var(--green)}
+  .info-line .dot.blue{background:var(--blue)}
+  .info-line b{color:#0a1530;font-weight:700}
+  .post-bottom-bar{padding:16px 18px 30px}
+  .save-cta{
+    width:100%;padding:14px;border-radius:14px;
+    background:linear-gradient(135deg,var(--blue) 0%,var(--blue-glow) 100%);
+    color:#fff;font-weight:700;font-size:14px;text-align:center;
+    box-shadow:0 8px 20px rgba(31,107,255,.35);
+  }
+
+  /* ===== SCREEN 5: Daily Gallery ===== */
+  .vp-gallery{height:100%;background:#0a1530;display:flex;flex-direction:column}
+  .gal-head{padding:44px 18px 14px;display:flex;align-items:center;justify-content:space-between}
+  .gal-title{display:flex;align-items:center;gap:10px}
+  .gal-title h4{font-family:'Bricolage Grotesque',sans-serif;font-size:18px;font-weight:700}
+  .gal-title svg{width:18px;height:18px;color:var(--cyan)}
+  .gal-meta{padding:0 18px 12px;display:flex;justify-content:space-between;font-size:11px;color:var(--text-mute)}
+  .gal-meta .expires{color:var(--cyan);font-weight:600}
+  .gal-grid{padding:0 14px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .gal-cell{aspect-ratio:1;border-radius:12px;position:relative;overflow:hidden;border:2px solid transparent}
+  .gal-cell.selected{border-color:var(--cyan);box-shadow:0 0 0 2px rgba(95,200,255,.25)}
+  .gal-cell .pic{position:absolute;inset:0}
+  .gal-cell .check{
+    position:absolute;top:6px;right:6px;width:18px;height:18px;border-radius:50%;
+    background:rgba(0,0,0,.4);border:1.5px solid #fff;
+  }
+  .gal-cell.selected .check{background:var(--cyan);border-color:var(--cyan);display:flex;align-items:center;justify-content:center}
+  .gal-cell.selected .check::after{content:"✓";color:#0a1530;font-size:10px;font-weight:900}
+  .gal-tag{position:absolute;left:6px;bottom:6px;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);padding:3px 7px;border-radius:6px;font-size:9px;font-weight:600}
+  .gal-tag.warn{background:rgba(239,68,68,.85)}
+  .gal-tag.good{background:rgba(34,197,94,.85)}
+  .gal-bottom{padding:14px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:auto}
+  .gal-bottom button{
+    padding:11px 6px;border-radius:12px;font-size:10px;font-weight:700;border:none;
+    display:flex;flex-direction:column;align-items:center;gap:4px;color:#fff;line-height:1.1;
+  }
+  .gal-bottom button svg{width:14px;height:14px}
+  .gal-bottom .secondary{background:rgba(31,107,255,.15);color:var(--cyan);border:1px solid rgba(95,200,255,.25)}
+  .gal-bottom .primary{background:linear-gradient(135deg,var(--blue),var(--blue-glow));box-shadow:0 6px 16px rgba(31,107,255,.4)}
+  .gal-bottom .danger{background:rgba(239,68,68,.12);color:#fca5a5;border:1px solid rgba(239,68,68,.3)}
+
+  /* Photo backgrounds for gallery cells - CSS gradients */
+  .pic-1{background:radial-gradient(ellipse at 50% 30%,#d49a78 0%,#9a5a40 22%,#4a3038 50%,#1a1830 80%)}
+  .pic-2{background:linear-gradient(180deg,#3a5a8c 0%,#7895c0 40%,#a8c3e0 70%,#d4e0f0 100%);position:relative}
+  .pic-2::after{content:"";position:absolute;inset:auto 0 0 0;height:55%;background:linear-gradient(180deg,#1a2848 0%,#0a1530 100%);clip-path:polygon(0 60%,15% 30%,25% 50%,40% 25%,55% 45%,70% 20%,85% 40%,100% 25%,100% 100%,0 100%)}
+  .pic-3{background:radial-gradient(ellipse at 50% 60%,#d4a874 0%,#a07248 35%,#5a3a24 70%,#1a0e08 100%)}
+  .pic-4{background:linear-gradient(180deg,#1a0a30 0%,#3a1a5a 35%,#7a3a8a 60%,#d4708a 90%,#f4a070 100%);position:relative}
+  .pic-4::after{content:"";position:absolute;inset:50% 0 0 0;background:linear-gradient(180deg,transparent,rgba(0,0,0,.6))}
+  .pic-5{background:radial-gradient(ellipse at 50% 50%,#f4d4a4 0%,#c89858 35%,#6a4828 70%,#2a1a14 100%)}
+  .pic-6{background:linear-gradient(180deg,#0a1530 0%,#1a2848 30%,#3a5a8c 60%,#7a9ac0 80%,#f4d490 100%);position:relative}
+  .pic-6::after{content:"";position:absolute;inset:auto 0 0 0;height:45%;background:#0a0a14;clip-path:polygon(0 80%,10% 50%,20% 65%,35% 30%,50% 55%,65% 25%,80% 50%,90% 35%,100% 50%,100% 100%,0 100%)}
+  .pic-7{background:radial-gradient(ellipse at 50% 35%,#e8b898 0%,#a87858 28%,#5a3838 55%,#1a1828 85%)}
+  .pic-8{background:linear-gradient(180deg,#3a78c0 0%,#5a9ad8 40%,#a8c8e8 70%,#e8d8b0 90%,#d49858 100%)}
+  .pic-9{background:radial-gradient(ellipse at 50% 30%,#e8a888 0%,#a86848 28%,#4a2828 55%,#1a0e14 85%)}
+
+  /* ===== SCREEN 6: QuickShare ===== */
+  .vp-share{height:100%;background:#fff;color:#0a1530;display:flex;flex-direction:column}
+  .share-head{padding:44px 18px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #eef1f8}
+  .share-head .back{width:28px;height:28px;display:flex;align-items:center;justify-content:center}
+  .share-head h4{font-family:'Bricolage Grotesque',sans-serif;font-size:18px;font-weight:700;flex:1}
+  .share-sub{padding:14px 18px 8px;font-size:11px;color:#5a6580;text-align:center;border-bottom:1px solid #f3f6fc}
+  .share-section{padding:16px 18px 4px}
+  .share-section h5{font-size:11px;font-weight:700;color:#5a6580;text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px}
+  .social-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+  .social-cell{
+    display:flex;flex-direction:column;align-items:center;gap:6px;
+    padding:10px 4px;font-size:10px;font-weight:600;color:#0a1530;
+  }
+  .social-cell .sic{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:16px}
+  .sic.wa{background:#25d366}
+  .sic.ig{background:linear-gradient(135deg,#f58529,#dd2a7b,#8134af)}
+  .sic.tk{background:#000;color:#fff;position:relative}
+  .sic.tk::before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,transparent 40%,rgba(255,4,112,.7) 50%,transparent 60%),linear-gradient(45deg,transparent 40%,rgba(0,242,234,.7) 50%,transparent 60%);border-radius:12px;mix-blend-mode:screen}
+  .sic.lk{background:#4a5575}
+  .actions-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+  .action-cell{
+    border:1px solid #e0e6f3;border-radius:14px;padding:14px 12px;
+    display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;
+  }
+  .action-cell .aic{width:36px;height:36px;border-radius:10px;background:rgba(31,107,255,.10);display:flex;align-items:center;justify-content:center;color:var(--blue)}
+  .action-cell .aic svg{width:18px;height:18px}
+  .action-cell b{font-size:12px;font-weight:700}
+  .action-cell small{font-size:10px;color:#5a6580}
+  .status-row{
+    margin:0 18px 24px;padding:12px 14px;border-radius:12px;background:#e8f7ee;
+    display:flex;align-items:center;gap:10px;font-size:12px;font-weight:600;color:#137a3a;
+  }
+  .status-row .check{width:18px;height:18px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:900;flex-shrink:0}
+  .status-row b{color:#137a3a}
+
+  /* FOOTNOTE */
+  .footnote{
+    max-width:1400px;margin:64px auto 0;padding:28px 32px;
+    border-radius:20px;border:1px solid var(--line);
+    background:rgba(255,255,255,.02);
+    display:flex;gap:20px;align-items:flex-start;
+  }
+  .footnote .ic{width:44px;height:44px;border-radius:12px;background:rgba(31,107,255,.14);display:flex;align-items:center;justify-content:center;color:var(--cyan);flex-shrink:0}
+  .footnote h4{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:16px;margin-bottom:6px}
+  .footnote p{color:var(--text-mute);font-size:14px;line-height:1.6}
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <span class="eyebrow">Etapa 3 — Protótipo</span>
+  <h1>SmartShot <em>JOVI</em><br>Web App Mobile First</h1>
+  <p>Webapp 100% rodando no navegador do celular, projetada para integrar-se à experiência de câmera da JOVI sem instalação de aplicativo. Captura via API do navegador, IA orientadora em tempo real e curadoria de 24h.</p>
+  <div class="badges">
+    <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7v10c0 5 4 8 10 8s10-3 10-8V7L12 2z"/></svg>100% Web</span>
+    <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="18" r="1"/></svg>Mobile First</span>
+    <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3 7h7l-5.5 4 2 7L12 16l-6.5 4 2-7L2 9h7l3-7z"/></svg>Prototipado no Figma</span>
+    <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l2 2"/></svg>Carregamento otimizado</span>
+  </div>
+</div>
+
+<div class="grid">
+
+  <!-- ============ SCREEN 1 ============ -->
+  <div class="screen">
+    <div class="screen-label">
+      <div class="screen-num">01</div>
+      <div class="screen-meta">
+        <h3>Câmera JOVI + SmartShot</h3>
+        <p>Ponto de entrada — captura web ativa o SmartShot IA</p>
+      </div>
+    </div>
+    <div class="browser">
+      <div class="browser-bar">
+        <div class="dots"><span></span><span></span><span></span></div>
+        <div class="url-pill">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          <span class="domain">smartshot.jovi.app</span><span class="path">/camera</span>
+          <span class="more">⋮</span>
+        </div>
+      </div>
+      <div class="viewport vp-camera">
+        <div class="status-bar">
+          <span>9:41</span>
+          <div class="icons">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M2 22h2v-8H2v8zm5 0h2V8H7v14zm5 0h2V2h-2v20zm5 0h2v-6h-2v6z"/></svg>
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3C7 3 2.7 5.3 0 9l12 13L24 9c-2.7-3.7-7-6-12-6z"/></svg>
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 7h16v10H3z" stroke="currentColor" stroke-width="2" fill="none"/><rect x="19" y="10" width="2" height="4"/></svg>
+          </div>
+        </div>
+        <div class="cam-hud">
+          <span class="chip">⚡ Flash</span>
+          <span class="chip">HDR</span>
+          <span class="chip ai">✦ IA</span>
+          <span class="chip">4:3</span>
+          <span class="chip">⚙</span>
+        </div>
+        <div class="viewfinder">
+          <div class="vf-overlay-text"><small>WEBAPP ATIVA</small>Câmera via getUserMedia</div>
+        </div>
+        <div class="cam-controls">
+          <div class="smartshot-cta">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2 6 6 2-6 2-2 6-2-6-6-2 6-2z"/></svg>
+            Ativar SmartShot IA
+            <span style="margin-left:auto">→</span>
+          </div>
+          <div class="cam-actions">
+            <div class="thumb-prev"></div>
+            <div class="shutter"></div>
+            <div class="flip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0115-6.7L21 8M21 3v5h-5M21 12a9 9 0 01-15 6.7L3 16M3 21v-5h5"/></svg></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN 2 ============ -->
+  <div class="screen">
+    <div class="screen-label">
+      <div class="screen-num">02</div>
+      <div class="screen-meta">
+        <h3>Seleção de Modo Inteligente</h3>
+        <p>Bottom sheet web — IA sugere o melhor modo para a cena</p>
+      </div>
+    </div>
+    <div class="browser">
+      <div class="browser-bar">
+        <div class="dots"><span></span><span></span><span></span></div>
+        <div class="url-pill">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          <span class="domain">smartshot.jovi.app</span><span class="path">/modos</span>
+          <span class="more">⋮</span>
+        </div>
+      </div>
+      <div class="viewport vp-modes">
+        <div class="viewfinder-bg"></div>
+        <div class="status-bar"><span>9:41</span><div class="icons"><span>•••</span><span>📶</span><span>🔋</span></div></div>
+        <div class="modes-sheet">
+          <div class="modes-head">
+            <div class="title">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2 6 6 2-6 2-2 6-2-6-6-2 6-2z"/></svg>
+              SmartShot IA
+            </div>
+            <div class="close">✕</div>
+          </div>
+          <div class="modes-grid">
+            <div class="mode-cell active">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>
+              Selfie
+            </div>
+            <div class="mode-cell">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
+              Noturna
+            </div>
+            <div class="mode-cell">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2h12l-1 4H7zM4 6h16v16H4z"/></svg>
+              Produto
+            </div>
+            <div class="mode-cell">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4v8a8 8 0 0016 0V4M8 4v6M12 4v6M16 4v6M20 20l-4-4"/></svg>
+              Comida
+            </div>
+            <div class="mode-cell">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-3 3-5 6-5s6 2 6 5M14 20c0-2 2-4 4.5-4S22 18 22 20"/></svg>
+              Grupo
+            </div>
+            <div class="mode-cell">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>
+              Retrato
+            </div>
+          </div>
+          <div class="apply-btn">Aplicar modo Selfie</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN 3 ============ -->
+  <div class="screen">
+    <div class="screen-label">
+      <div class="screen-num">03</div>
+      <div class="screen-meta">
+        <h3>Orientação em Tempo Real</h3>
+        <p>Overlay com guias, ângulo, iluminação e qualidade prevista</p>
+      </div>
+    </div>
+    <div class="browser">
+      <div class="browser-bar">
+        <div class="dots"><span></span><span></span><span></span></div>
+        <div class="url-pill">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          <span class="domain">smartshot.jovi.app</span><span class="path">/guide</span>
+          <span class="more">⋮</span>
+        </div>
+      </div>
+      <div class="viewport vp-guide">
+        <div class="status-bar"><span>9:41</span><div class="icons"><span>•••</span><span>📶</span><span>🔋</span></div></div>
+        <div class="vf">
+          <div class="mode-pill"><small>Modo ativo</small>Selfie &amp; Pose</div>
+          <div class="pose-outline"></div>
+          <div class="light-meter">
+            <span class="bar"></span><span class="bar"></span><span class="bar on"></span>
+            <span class="bar on"></span><span class="bar on"></span><span class="bar on"></span>
+            <span class="bar on"></span><span class="bar"></span><span class="bar"></span>
+          </div>
+          <div class="feedback-card">
+            <div class="fb-row"><span class="fb-icon ok">✓</span>Boa iluminação detectada</div>
+            <div class="fb-row"><span class="fb-icon warn">!</span>Afaste levemente o celular</div>
+            <div class="fb-row"><span class="fb-icon ok">✓</span>Ângulo ideal encontrado</div>
+          </div>
+          <div class="quality-tag">Qualidade prevista: <b>Alta</b></div>
+        </div>
+        <div class="cam-controls">
+          <div class="cam-actions">
+            <div class="thumb-prev"></div>
+            <div class="shutter"></div>
+            <div class="flip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0115-6.7L21 8M21 3v5h-5M21 12a9 9 0 01-15 6.7L3 16M3 21v-5h5"/></svg></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN 4 ============ -->
+  <div class="screen">
+    <div class="screen-label">
+      <div class="screen-num">04</div>
+      <div class="screen-meta">
+        <h3>Pós-Captura</h3>
+        <p>Ações rápidas sem sair do fluxo da webapp</p>
+      </div>
+    </div>
+    <div class="browser">
+      <div class="browser-bar">
+        <div class="dots"><span></span><span></span><span></span></div>
+        <div class="url-pill">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          <span class="domain">smartshot.jovi.app</span><span class="path">/preview</span>
+          <span class="more">⋮</span>
+        </div>
+      </div>
+      <div class="viewport vp-post">
+        <div class="status-bar"><span>9:41</span><div class="icons"><span>•••</span><span>📶</span><span>🔋</span></div></div>
+        <div class="post-head">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+          <span style="font-weight:600">Foto capturada</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M6 6v14h12V6"/></svg>
+        </div>
+        <div class="post-photo"></div>
+        <div class="post-actions">
+          <div class="quick-row">
+            <div class="quick-btn">
+              <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12M7 8l5-5 5 5M5 21h14"/></svg></div>
+              Compartilhar
+            </div>
+            <div class="quick-btn">
+              <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2 6 6 2-6 2-2 6-2-6-6-2 6-2z"/></svg></div>
+              Editar IA
+            </div>
+            <div class="quick-btn">
+              <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12M7 13l5 5 5-5M5 21h14"/></svg></div>
+              Salvar
+            </div>
+            <div class="quick-btn">
+              <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg></div>
+              Daily Gallery
+            </div>
+          </div>
+          <div class="info-line"><span class="dot green"></span>Qualidade detectada: <b>Alta</b></div>
+          <div class="info-line"><span class="dot blue"></span>Modo usado: <b>Selfie &amp; Pose</b></div>
+        </div>
+        <div class="post-bottom-bar">
+          <div class="save-cta">Enviar para Daily Gallery</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN 5 ============ -->
+  <div class="screen">
+    <div class="screen-label">
+      <div class="screen-num">05</div>
+      <div class="screen-meta">
+        <h3>Daily Gallery</h3>
+        <p>Curadoria de 24h — IA destaca as melhores capturas</p>
+      </div>
+    </div>
+    <div class="browser">
+      <div class="browser-bar">
+        <div class="dots"><span></span><span></span><span></span></div>
+        <div class="url-pill">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          <span class="domain">smartshot.jovi.app</span><span class="path">/daily</span>
+          <span class="more">⋮</span>
+        </div>
+      </div>
+      <div class="viewport vp-gallery">
+        <div class="status-bar"><span>9:41</span><div class="icons"><span>•••</span><span>📶</span><span>🔋</span></div></div>
+        <div class="gal-head">
+          <div class="gal-title">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2 6 6 2-6 2-2 6-2-6-6-2 6-2z"/></svg>
+            <h4>Daily Gallery</h4>
+          </div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>
+        </div>
+        <div class="gal-meta">
+          <span>Últimas 24h · 9 capturas</span>
+          <span class="expires">Expira em 18h 43min</span>
+        </div>
+        <div class="gal-grid">
+          <div class="gal-cell"><div class="pic pic-1"></div><div class="check"></div><div class="gal-tag warn">⚠ Desfoco</div></div>
+          <div class="gal-cell"><div class="pic pic-2"></div><div class="check"></div></div>
+          <div class="gal-cell"><div class="pic pic-3"></div><div class="check"></div><div class="gal-tag good">★ Top</div></div>
+          <div class="gal-cell"><div class="pic pic-4"></div><div class="check"></div></div>
+          <div class="gal-cell"><div class="pic pic-5"></div><div class="check"></div></div>
+          <div class="gal-cell selected"><div class="pic pic-6"></div><div class="check"></div><div class="gal-tag good">Selecionada</div></div>
+          <div class="gal-cell"><div class="pic pic-7"></div><div class="check"></div></div>
+          <div class="gal-cell"><div class="pic pic-8"></div><div class="check"></div></div>
+          <div class="gal-cell"><div class="pic pic-9"></div><div class="check"></div></div>
+        </div>
+        <div class="gal-bottom">
+          <button class="secondary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12M7 13l5 5 5-5M5 21h14"/></svg>Salvar<br>selecionados</button>
+          <button class="primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>Salvar<br>tudo</button>
+          <button class="danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M6 6v14h12V6"/></svg>Excluir não<br>selecionados</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN 6 ============ -->
+  <div class="screen">
+    <div class="screen-label">
+      <div class="screen-num">06</div>
+      <div class="screen-meta">
+        <h3>QuickShare</h3>
+        <p>Compartilhamento integrado — sem sair do navegador</p>
+      </div>
+    </div>
+    <div class="browser">
+      <div class="browser-bar">
+        <div class="dots"><span></span><span></span><span></span></div>
+        <div class="url-pill">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          <span class="domain">smartshot.jovi.app</span><span class="path">/share</span>
+          <span class="more">⋮</span>
+        </div>
+      </div>
+      <div class="viewport vp-share">
+        <div class="status-bar" style="color:#0a1530"><span>9:41</span><div class="icons"><span>•••</span><span>📶</span><span>🔋</span></div></div>
+        <div class="share-head">
+          <div class="back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px"><path d="M15 18l-6-6 6-6"/></svg></div>
+          <h4>QuickShare</h4>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+        </div>
+        <div class="share-sub">Compartilhe sua captura rapidamente</div>
+        <div class="share-section">
+          <h5>Compartilhar via</h5>
+          <div class="social-grid">
+            <div class="social-cell"><div class="sic wa">W</div>WhatsApp</div>
+            <div class="social-cell"><div class="sic ig">◉</div>Instagram</div>
+            <div class="social-cell"><div class="sic tk">♪</div>TikTok</div>
+            <div class="social-cell"><div class="sic lk">∞</div>Link</div>
+          </div>
+        </div>
+        <div class="share-section">
+          <h5>Ações rápidas</h5>
+          <div class="actions-grid">
+            <div class="action-cell">
+              <div class="aic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007 0l3-3a5 5 0 00-7-7l-1 1M14 11a5 5 0 00-7 0l-3 3a5 5 0 007 7l1-1"/></svg></div>
+              <b>Copiar link</b>
+              <small>Copia o link da mídia</small>
+            </div>
+            <div class="action-cell">
+              <div class="aic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></div>
+              <b>Enviar agora</b>
+              <small>Compartilhar imediatamente</small>
+            </div>
+          </div>
+        </div>
+        <div class="status-row">
+          <div class="check">✓</div>
+          Status: <b>pronto para compartilhar</b>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footnote">
+  <div class="ic">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:22px;height:22px"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+  </div>
+  <div>
+    <h4>Por que essas telas atendem à Etapa 3</h4>
+    <p>
+      Cada tela é apresentada dentro de um <b>chrome de navegador mobile</b> (com URL <code style="background:rgba(255,255,255,.05);padding:2px 6px;border-radius:4px;font-size:12px">smartshot.jovi.app/...</code>), reforçando que é uma <b>aplicação 100% web</b> rodando no navegador do celular — não um app nativo. A jornada cobre captura → IA → orientação em tempo real → pós-captura → curadoria de 24h → compartilhamento, mantendo coerência direta com o MER da Etapa 2 (T_JOV_USUARIO, T_JOV_CAPTURA, T_JOV_MODO_CAMERA, T_JOV_SUGESTAO_IA, T_JOV_ALBUM, T_JOV_GALERIA_DIARIA, T_JOV_COMPARTILHAMENTO).
+    </p>
+  </div>
+</div>
+
+</body>
+</html>
