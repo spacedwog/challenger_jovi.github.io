@@ -3044,7 +3044,9 @@
 
     chips.forEach((chip) => {
       chip.addEventListener('click', () => {
-        sceneIndex = Number(chip.dataset.scene || 0);
+        const nextIndex = Number(chip.dataset.scene || 0);
+        if (!Number.isInteger(nextIndex) || nextIndex < 0 || nextIndex >= scenes.length) return;
+        sceneIndex = nextIndex;
         chips.forEach((node) => {
           const active = node === chip;
           node.classList.toggle('is-active', active);
@@ -3100,7 +3102,10 @@
 
     const handleResize = () => {
       window.clearTimeout(resizeTimer);
-      resizeTimer = window.setTimeout(resize, 120);
+      resizeTimer = window.setTimeout(() => {
+        resize();
+        if (!isAnimating) drawFrame();
+      }, 120);
     };
 
     const handleVisibilityChange = () => {
