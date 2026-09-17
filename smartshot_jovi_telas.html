@@ -146,6 +146,11 @@
     background:
       radial-gradient(ellipse at 50% 35%, #c98c6a 0%, #8a4f3a 22%, #4a2a30 45%, #1a1830 70%, #0a0f24 100%);
   }
+  .camera-stream{
+    position:absolute;inset:0;width:100%;height:100%;
+    object-fit:cover;background:#050b18;z-index:0;
+  }
+  .camera-stream.is-front-camera{transform:scaleX(-1)}
   .viewfinder::before{
     content:"";position:absolute;inset:0;
     background:
@@ -162,7 +167,7 @@
     position:absolute;top:14px;left:14px;
     background:rgba(0,0,0,.55);backdrop-filter:blur(10px);
     padding:6px 12px;border-radius:8px;font-size:11px;font-weight:600;color:#fff;
-    border:1px solid rgba(255,255,255,.12);
+    border:1px solid rgba(255,255,255,.12);z-index:3;
   }
   .vf-overlay-text small{display:block;color:var(--cyan);font-size:9px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px}
   .cam-controls{
@@ -185,12 +190,13 @@
     background:linear-gradient(135deg,#3a5a8c,#1a2848);
     border:2px solid rgba(255,255,255,.2);
   }
+  .thumb-prev.has-photo{background-size:cover;background-position:center}
   .shutter{
     width:64px;height:64px;border-radius:50%;
     background:#fff;border:4px solid #fff;
     box-shadow:0 0 0 3px #000, 0 0 0 5px #fff;
   }
-  .flip{width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center}
+  .flip{width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;border:none}
   .flip svg{width:20px;height:20px;color:#fff}
 
   /* ===== SCREEN 2: Modos ===== */
@@ -478,7 +484,8 @@
           <span class="chip">⚙</span>
         </div>
         <div class="viewfinder">
-          <div class="vf-overlay-text"><small>WEBAPP ATIVA</small>Câmera via getUserMedia</div>
+          <video class="camera-stream camera-stream-main" autoplay playsinline muted aria-label="Prévia ao vivo da câmera SmartShot"></video>
+          <div class="vf-overlay-text"><small>WEBAPP ATIVA</small>Toque no obturador para liberar a câmera</div>
         </div>
         <div class="cam-controls">
           <div class="smartshot-cta">
@@ -489,7 +496,7 @@
           <div class="cam-actions">
             <div class="thumb-prev"></div>
             <div class="shutter"></div>
-            <div class="flip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0115-6.7L21 8M21 3v5h-5M21 12a9 9 0 01-15 6.7L3 16M3 21v-5h5"/></svg></div>
+            <button class="flip camera-flip" type="button" aria-label="Alternar câmera"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0115-6.7L21 8M21 3v5h-5M21 12a9 9 0 01-15 6.7L3 16M3 21v-5h5"/></svg></button>
           </div>
         </div>
       </div>
@@ -578,6 +585,7 @@
       <div class="viewport vp-guide">
         <div class="status-bar"><span>9:41</span><div class="icons"><span>•••</span><span>📶</span><span>🔋</span></div></div>
         <div class="vf">
+          <video class="camera-stream camera-stream-guide" autoplay playsinline muted aria-label="Prévia ao vivo da câmera SmartShot com guia de pose"></video>
           <div class="mode-pill"><small>Modo ativo</small>Selfie &amp; Pose</div>
           <div class="pose-outline"></div>
           <div class="light-meter">
@@ -596,7 +604,7 @@
           <div class="cam-actions">
             <div class="thumb-prev"></div>
             <div class="shutter"></div>
-            <div class="flip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0115-6.7L21 8M21 3v5h-5M21 12a9 9 0 01-15 6.7L3 16M3 21v-5h5"/></svg></div>
+            <button class="flip camera-flip" type="button" aria-label="Alternar câmera"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0115-6.7L21 8M21 3v5h-5M21 12a9 9 0 01-15 6.7L3 16M3 21v-5h5"/></svg></button>
           </div>
         </div>
       </div>
@@ -779,7 +787,7 @@
     </label>
     <label class="upload-field">
       <span>Foto para upload</span>
-      <input class="upload-file-input" type="file" accept="image/*">
+      <input class="upload-file-input" type="file" accept="image/*" capture="environment">
     </label>
     <button class="upload-submit" type="button">Fazer upload para a API</button>
   </div>
@@ -802,10 +810,31 @@
   </div>
 </div>
 
+<script src="smartshot_camera_helpers.js"></script>
 <script>
 (() => {
   const screens = [...document.querySelectorAll('.screen')];
   if (screens.length < 6) return;
+  const cameraHelpers = window.smartShotCameraHelpers || {
+    resolveCameraFailure(error, isSecureContext) {
+      const denied = error?.name === 'NotAllowedError' || error?.name === 'SecurityError';
+      const unavailable = error?.name === 'NotFoundError' || error?.name === 'DevicesNotFoundError' || error?.name === 'OverconstrainedError';
+      if (denied) return { title: 'CÂMERA BLOQUEADA', detail: 'Permita acesso ou use o upload manual', message: 'Permita o acesso à câmera para continuar.' };
+      if (!isSecureContext) return { title: 'CONTEXTO INSEGURO', detail: 'Abra a página em HTTPS ou localhost', message: 'Abra a página em HTTPS ou localhost para usar a câmera.' };
+      if (unavailable) return { title: 'CÂMERA INDISPONÍVEL', detail: 'Nenhum dispositivo compatível foi encontrado', message: 'Não encontrei uma câmera disponível neste dispositivo.' };
+      return { title: 'CÂMERA INDISPONÍVEL', detail: 'Tente novamente ou use o upload manual', message: 'Não foi possível iniciar a câmera neste dispositivo.' };
+    },
+    computeResumeIntent(smartshotAtivo, hasCameraStream) {
+      return Boolean(smartshotAtivo && hasCameraStream);
+    },
+    shouldRestartCamera(visibilityState, shouldResumeCamera, smartshotAtivo, hasCameraStream) {
+      return visibilityState === 'visible' && Boolean(shouldResumeCamera && smartshotAtivo && !hasCameraStream);
+    },
+    bindCameraControls(shutterButtons, flipButtons, onCapture, onFlip) {
+      shutterButtons.forEach((button) => button.addEventListener('click', onCapture));
+      flipButtons.forEach((button) => button.addEventListener('click', onFlip));
+    }
+  };
 
   class SmartShotAIAgent {
     constructor(screensRef) {
@@ -816,6 +845,9 @@
         qualidade: 'Alta',
         plataforma: 'WhatsApp',
         apiBase: 'http://localhost:8080',
+        cameraFacingMode: null,
+        cameraStream: null,
+        cameraReady: false,
         selectedFile: null,
         uploadedMedia: null,
         previewObjectUrl: null,
@@ -832,11 +864,12 @@
       this.injectStyles();
       this.mapElements();
       this.bindAllActions();
+      this.bindLifecycle();
       this.mountAgentPanel();
       this.startGalleryTimer();
       this.updateGuideByMode();
       this.updateGalleryMeta();
-      this.updateUploadStatus('Selecione uma imagem e faça upload para integrar o fluxo ao backend Java.', 'info');
+      this.updateUploadStatus('Capture uma foto ou selecione uma imagem para integrar o fluxo ao backend Java.', 'info');
       this.setShareStatus('pronto para compartilhar');
     }
 
@@ -863,6 +896,8 @@
       this.screen4 = screen4;
       this.screen5 = screen5;
       this.smartshotCta = screen1.querySelector('.smartshot-cta');
+      this.cameraVideos = [screen1.querySelector('.camera-stream-main'), screen3.querySelector('.camera-stream-guide')].filter(Boolean);
+      this.cameraStatusLabel = screen1.querySelector('.vf-overlay-text');
       this.modeCells = [...screen2.querySelectorAll('.mode-cell')];
       this.applyModeButton = screen2.querySelector('.apply-btn');
       this.modeGuideLabel = screen3.querySelector('.mode-pill');
@@ -886,6 +921,13 @@
       this.uploadStatus = document.querySelector('.upload-status');
       this.uploadMediaPill = document.querySelector('.upload-media-pill');
       this.uploadGalleryPill = document.querySelector('.upload-gallery-pill');
+      this.thumbPreviews = [...document.querySelectorAll('.thumb-prev')];
+      this.shutterButtons = [...document.querySelectorAll('.shutter')];
+      this.flipButtons = [...document.querySelectorAll('.camera-flip')];
+      this.captureCanvas = document.createElement('canvas');
+      this.cameraStartPromise = null;
+      this.lastCameraFallbackToPicker = false;
+      this.shouldResumeCamera = false;
     }
 
     setShareStatus(text) {
@@ -896,6 +938,249 @@
       if (!this.uploadStatus) return;
       this.uploadStatus.textContent = text;
       this.uploadStatus.dataset.tone = tone;
+    }
+
+    updateCameraLabel(title, detail) {
+      if (!this.cameraStatusLabel) return;
+      this.cameraStatusLabel.textContent = '';
+      const label = document.createElement('small');
+      label.textContent = title;
+      this.cameraStatusLabel.appendChild(label);
+      this.cameraStatusLabel.append(detail);
+    }
+
+    getVideoConstraints() {
+      const constraints = {
+        width: { ideal: 1280 },
+        height: { ideal: 720 }
+      };
+      if (this.state.cameraFacingMode) constraints.facingMode = { ideal: this.state.cameraFacingMode };
+      return constraints;
+    }
+
+    async waitForVideoFrame(video) {
+      if (!video) return;
+      if (video.readyState >= 2 && video.videoWidth && video.videoHeight) return true;
+      return await new Promise((resolve) => {
+        const timeoutId = window.setTimeout(() => {
+          video.removeEventListener('loadedmetadata', onReady);
+          video.removeEventListener('canplay', onReady);
+          resolve(false);
+        }, 1500);
+        const onReady = () => {
+          window.clearTimeout(timeoutId);
+          video.removeEventListener('loadedmetadata', onReady);
+          video.removeEventListener('canplay', onReady);
+          resolve(true);
+        };
+        video.addEventListener('loadedmetadata', onReady, { once: true });
+        video.addEventListener('canplay', onReady, { once: true });
+      });
+    }
+
+    stopCameraStream() {
+      this.state.cameraStream?.getTracks().forEach(track => track.stop());
+      this.state.cameraStream = null;
+      this.state.cameraReady = false;
+      this.cameraVideos?.forEach((video) => {
+        if (video) video.srcObject = null;
+      });
+    }
+
+    async requestCameraStream(preferredFacingMode = this.state.cameraFacingMode) {
+      if (!navigator.mediaDevices?.getUserMedia) return { stream: null, error: new Error('getUserMedia indisponível') };
+      const baseConstraints = this.getVideoConstraints();
+      const attempts = [
+        { video: preferredFacingMode ? { ...baseConstraints, facingMode: { ideal: preferredFacingMode } } : baseConstraints, audio: false },
+        { video: true, audio: false }
+      ];
+      let lastError = null;
+      for (const constraints of attempts) {
+        try {
+          return { stream: await navigator.mediaDevices.getUserMedia(constraints), error: null };
+        } catch (error) {
+          lastError = error;
+        }
+      }
+      return { stream: null, error: lastError };
+    }
+
+    async activateCameraStream(stream, preferredFacingMode = this.state.cameraFacingMode) {
+      const activeFacingMode = stream.getVideoTracks?.()[0]?.getSettings?.().facingMode || preferredFacingMode;
+      this.stopCameraStream();
+      this.state.cameraStream = stream;
+      this.state.cameraReady = true;
+      this.state.cameraFacingMode = activeFacingMode || this.state.cameraFacingMode;
+      await Promise.all(this.cameraVideos.map(async (video) => {
+        video.srcObject = stream;
+        video.classList.toggle('is-front-camera', activeFacingMode === 'user');
+        const played = await video.play().then(() => true).catch(() => false);
+        if (!played) throw new Error('Autoplay bloqueado');
+        const frameReady = await this.waitForVideoFrame(video);
+        if (!frameReady) throw new Error('Frame indisponível');
+      }));
+      this.updateCameraLabel('CÂMERA ONLINE', activeFacingMode === 'user' ? 'Prévia frontal ativa para desktop ou selfie' : activeFacingMode === 'environment' ? 'Prévia traseira ativa para captura mobile' : 'Prévia ativa para captura em desktop ou mobile');
+      this.updateUploadStatus('Câmera pronta para capturar foto em desktop ou mobile.', 'success');
+      return true;
+    }
+
+    async startCamera() {
+      if (this.cameraStartPromise) return this.cameraStartPromise;
+      this.cameraStartPromise = (async () => {
+        if (!navigator.mediaDevices?.getUserMedia) {
+          this.updateCameraLabel('CÂMERA INDISPONÍVEL', 'Use o seletor de arquivo para enviar uma foto');
+          this.updateUploadStatus('Este navegador não suporta getUserMedia. Use o envio por arquivo como alternativa.', 'error');
+          return false;
+        }
+        const { stream, error } = await this.requestCameraStream();
+        if (!stream) {
+          const failure = cameraHelpers.resolveCameraFailure(error, window.isSecureContext);
+          this.updateCameraLabel(failure.title, failure.detail);
+          this.updateUploadStatus(failure.message, 'error');
+          return false;
+        }
+        try {
+          return await this.activateCameraStream(stream);
+        } catch (_) {
+          stream.getTracks?.().forEach(track => track.stop());
+          this.updateCameraLabel('CÂMERA BLOQUEADA', 'Toque no obturador para tentar novamente');
+          this.updateUploadStatus('A câmera não conseguiu exibir a prévia ao vivo neste navegador.', 'error');
+          return false;
+        }
+      })();
+      try {
+        return await this.cameraStartPromise;
+      } finally {
+        this.cameraStartPromise = null;
+      }
+    }
+
+    async ensureCameraReady({ allowFilePicker = false } = {}) {
+      this.lastCameraFallbackToPicker = false;
+      if (this.state.cameraReady && this.state.cameraStream) return true;
+      const started = await this.startCamera();
+      if (!started && allowFilePicker) {
+        this.lastCameraFallbackToPicker = true;
+      }
+      return started;
+    }
+
+    async pickManualPhoto() {
+      if (!this.fileInput) return null;
+      this.updateUploadStatus('Selecione uma imagem manualmente para continuar o fluxo.', 'info');
+      return await new Promise((resolve) => {
+        let settled = false;
+        const finish = (file = null) => {
+          if (settled) return;
+          settled = true;
+          window.clearTimeout(timeoutId);
+          window.removeEventListener('focus', onFocus);
+          resolve(file);
+        };
+        const onChange = (event) => finish(event.target.files?.[0] || null);
+        const onFocus = () => window.setTimeout(() => finish(this.fileInput.files?.[0] || null), 300);
+        const timeoutId = window.setTimeout(() => finish(this.fileInput.files?.[0] || null), 10000);
+        this.fileInput.value = '';
+        this.fileInput.addEventListener('change', onChange, { once: true });
+        window.addEventListener('focus', onFocus, { once: true });
+        this.fileInput.click();
+      });
+    }
+
+    async switchCamera() {
+      if (!this.state.smartshotAtivo) {
+        this.updateCameraLabel('SMARTSHOT INATIVO', 'Ative o SmartShot IA para alternar a câmera');
+        this.updateUploadStatus('Ative o SmartShot IA antes de alternar a câmera.', 'info');
+        return false;
+      }
+      const previousFacingMode = this.state.cameraFacingMode || 'user';
+      const nextFacingMode = previousFacingMode === 'user' ? 'environment' : 'user';
+      const { stream } = await this.requestCameraStream(nextFacingMode);
+      if (!stream) return false;
+      try {
+        return await this.activateCameraStream(stream, nextFacingMode);
+      } catch (_) {
+        stream.getTracks?.().forEach(track => track.stop());
+        return false;
+      }
+    }
+
+    async capturePhotoFile() {
+      const ready = await this.ensureCameraReady({ allowFilePicker: true });
+      if (!ready) {
+        if (this.lastCameraFallbackToPicker) return await this.pickManualPhoto();
+        this.updateUploadStatus('Não consegui iniciar a câmera. Use o seletor de arquivo para continuar.', 'error');
+        return null;
+      }
+      const video = this.cameraVideos.find(item => item?.videoWidth && item?.videoHeight);
+      if (!video) {
+        this.updateUploadStatus('A câmera foi aberta, mas nenhum frame ficou disponível para captura.', 'error');
+        return null;
+      }
+      this.captureCanvas.width = video.videoWidth;
+      this.captureCanvas.height = video.videoHeight;
+      const context = this.captureCanvas.getContext('2d');
+      if (!context) {
+        this.updateUploadStatus('O navegador não conseguiu preparar a área de captura da foto.', 'error');
+        return null;
+      }
+      context.drawImage(video, 0, 0, this.captureCanvas.width, this.captureCanvas.height);
+      const blob = await new Promise(resolve => this.captureCanvas.toBlob(resolve, 'image/jpeg', 0.92));
+      if (!blob) {
+        this.updateUploadStatus('A captura foi cancelada antes de gerar a imagem.', 'error');
+        return null;
+      }
+      const timestamp = Date.now();
+      try {
+        return new File([blob], `smartshot-${timestamp}.jpg`, {
+          type: 'image/jpeg',
+          lastModified: timestamp
+        });
+      } catch (_) {
+        Object.defineProperties(blob, {
+          name: { value: `smartshot-${timestamp}.jpg`, configurable: true },
+          lastModified: { value: timestamp, configurable: true }
+        });
+      }
+      return blob;
+    }
+
+    getSelectedFileName(file) {
+      return file?.name || file?.blob?.name || 'captura-smartshot.jpg';
+    }
+
+    resolveSelectedBlob(file) {
+      if (!file) return null;
+      return file instanceof Blob ? file : file.blob instanceof Blob ? file.blob : null;
+    }
+
+    updateThumbPreviews(url) {
+      this.thumbPreviews.forEach((thumb) => {
+        if (!thumb) return;
+        thumb.classList.toggle('has-photo', Boolean(url));
+        thumb.style.backgroundImage = url ? `url("${url}")` : '';
+      });
+    }
+
+    bindLifecycle() {
+      const cleanup = () => {
+        this.shouldResumeCamera = cameraHelpers.computeResumeIntent(this.state.smartshotAtivo, Boolean(this.state.cameraStream));
+        this.stopCameraStream();
+      };
+      window.addEventListener('beforeunload', cleanup);
+      window.addEventListener('pagehide', cleanup);
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+          this.shouldResumeCamera = cameraHelpers.computeResumeIntent(this.state.smartshotAtivo, Boolean(this.state.cameraStream));
+          this.stopCameraStream();
+          if (this.state.smartshotAtivo) this.updateCameraLabel('CÂMERA EM PAUSA', 'Toque no obturador para reativar a câmera');
+        }
+        if (cameraHelpers.shouldRestartCamera(document.visibilityState, this.shouldResumeCamera, this.state.smartshotAtivo, Boolean(this.state.cameraStream))) {
+          void this.startCamera().then((started) => {
+            this.shouldResumeCamera = !started;
+          });
+        }
+      });
     }
 
     updateGuideByMode() {
@@ -925,6 +1210,11 @@
         : '✦ Ativar SmartShot IA <span style="margin-left:auto">→</span>';
       this.smartshotCta.style.opacity = this.state.smartshotAtivo ? '1' : '.9';
       this.smartshotCta.style.filter = this.state.smartshotAtivo ? 'saturate(1.1)' : 'none';
+      if (this.state.smartshotAtivo) void this.ensureCameraReady();
+      else {
+        this.shouldResumeCamera = false;
+        this.stopCameraStream();
+      }
     }
 
     setMode(modeName) {
@@ -942,14 +1232,18 @@
       if (scroll) this.screen3.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
-    captureShot() {
+    async captureShot() {
       this.updateGuideByMode();
+      const capturedFile = await this.capturePhotoFile();
+      if (!capturedFile) return false;
+      this.handleFileSelection(capturedFile);
       const qualidade = ['Alta', 'Alta', 'Média'][Math.floor(Math.random() * 3)];
       this.state.qualidade = qualidade;
       if (this.qualityTag) this.qualityTag.textContent = qualidade;
       if (this.previewQualityLabel) this.previewQualityLabel.textContent = qualidade;
       this.setShareStatus('captura pronta para upload Java');
       this.screen4.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return true;
     }
 
     async runQuickAction(acao) {
@@ -1077,17 +1371,24 @@
       this.state.selectedFile = file || null;
       this.state.uploadedMedia = null;
       this.state.galleryLinked = false;
-      if (this.uploadMediaPill) this.uploadMediaPill.textContent = file ? `Arquivo pronto: ${file.name}` : 'MIDIA aguardando upload';
+      if (this.uploadMediaPill) this.uploadMediaPill.textContent = file ? `Arquivo pronto: ${this.getSelectedFileName(file)}` : 'MIDIA aguardando upload';
       if (this.uploadGalleryPill) this.uploadGalleryPill.textContent = 'Daily Gallery sem item sincronizado';
       if (!file) {
+        this.updateThumbPreviews('');
         this.updateUploadStatus('Selecione uma imagem para iniciar o fluxo de upload.', 'info');
         return;
       }
       if (this.state.previewObjectUrl) URL.revokeObjectURL(this.state.previewObjectUrl);
-      this.state.previewObjectUrl = URL.createObjectURL(file);
+      const previewBlob = this.resolveSelectedBlob(file);
+      if (!previewBlob) {
+        this.updateUploadStatus('A captura gerada não é suportada neste navegador.', 'error');
+        return;
+      }
+      this.state.previewObjectUrl = URL.createObjectURL(previewBlob);
       this.setPreviewImage(this.state.previewObjectUrl);
       this.setGalleryPreview(this.state.previewObjectUrl);
-      this.updateUploadStatus(`Arquivo ${file.name} pronto para upload no backend Java.`, 'info');
+      this.updateThumbPreviews(this.state.previewObjectUrl);
+      this.updateUploadStatus(`Arquivo ${this.getSelectedFileName(file)} pronto para upload no backend Java.`, 'info');
       this.setShareStatus('arquivo carregado localmente');
     }
 
@@ -1097,6 +1398,7 @@
       const assetUrl = this.resolveAssetUrl(upload.fileUrl);
       this.setPreviewImage(assetUrl);
       this.setGalleryPreview(assetUrl);
+      this.updateThumbPreviews(assetUrl);
       if (this.uploadMediaPill) this.uploadMediaPill.textContent = `MIDIA ${upload.mediaId} · CAPTURA ${upload.captureId} · ${upload.sizeKb} KB`;
       if (this.uploadGalleryPill) this.uploadGalleryPill.textContent = `Pronto para Daily Gallery · modo ${upload.mode}`;
     }
@@ -1106,13 +1408,19 @@
         this.updateUploadStatus('Selecione uma imagem antes de chamar a API Java.', 'error');
         return null;
       }
+      const uploadBlob = this.resolveSelectedBlob(this.state.selectedFile);
+      if (!uploadBlob) {
+        this.updateUploadStatus('A mídia selecionada não pôde ser preparada para upload.', 'error');
+        return null;
+      }
+      const uploadFileName = this.getSelectedFileName(this.state.selectedFile);
       const formData = new FormData();
-      formData.append('file', this.state.selectedFile);
+      formData.append('file', uploadBlob, uploadFileName);
       formData.append('userId', '1');
       formData.append('mode', this.state.modo);
       formData.append('quality', this.state.qualidade);
       formData.append('captureType', 'smartshot-web');
-      this.updateUploadStatus(`Enviando ${this.state.selectedFile.name} para ${this.resolveApiBase()}...`, 'loading');
+      this.updateUploadStatus(`Enviando ${uploadFileName} para ${this.resolveApiBase()}...`, 'loading');
       try {
         const upload = await this.fetchJson(this.buildApiUrl('/api/uploads'), { method: 'POST', body: formData });
         this.applyUploadResult(upload);
@@ -1208,7 +1516,9 @@
       if (!text) return 'Digite um comando para eu agir.';
       if (text.includes('ativar smartshot')) { this.toggleSmartShot(true); return 'SmartShot IA ativado.'; }
       if (text.includes('desativar smartshot')) { this.toggleSmartShot(false); return 'SmartShot IA desativado.'; }
-      if (text.includes('capturar')) { this.captureShot(); return 'Captura simulada realizada.'; }
+      if (text.includes('abrir câmera') || text.includes('abrir camera')) { return await this.ensureCameraReady() ? 'Câmera iniciada.' : 'Não consegui iniciar a câmera.'; }
+      if (text.includes('trocar câmera') || text.includes('trocar camera') || text.includes('inverter câmera') || text.includes('inverter camera')) { return await this.switchCamera() ? 'Câmera alternada.' : 'Não consegui alternar a câmera.'; }
+      if (text.includes('capturar')) { return await this.captureShot() ? 'Captura realizada.' : 'Não consegui capturar a foto.'; }
       if (text.includes('aplicar modo')) { this.applyMode(); return `Modo ${this.state.modo} aplicado.`; }
       if (text.includes('salvar tudo')) { await this.saveAllGallery(); return 'Todas as capturas foram salvas.'; }
       if (text.includes('remover não selecionadas')) { this.removeUnselectedGallery(); return 'Itens não selecionados removidos da galeria.'; }
@@ -1234,7 +1544,7 @@
       this.smartshotCta?.addEventListener('click', () => this.toggleSmartShot());
       this.modeCells.forEach(cell => cell.addEventListener('click', () => this.setMode(cell.textContent.trim().split('\n').pop().trim())));
       this.applyModeButton?.addEventListener('click', () => this.applyMode());
-      this.screen3.querySelectorAll('.shutter').forEach(shutter => shutter.addEventListener('click', () => this.captureShot()));
+      cameraHelpers.bindCameraControls(this.shutterButtons, this.flipButtons, () => void this.captureShot(), () => void this.switchCamera());
       this.quickButtons.forEach(button => button.addEventListener('click', () => void this.runQuickAction(button.textContent)));
       this.saveToGallery?.addEventListener('click', () => void this.sendToGallery());
       this.galleryCells.forEach(cell => cell.addEventListener('click', () => this.toggleGalleryCell(cell)));
