@@ -906,6 +906,7 @@
       this.captureCanvas = document.createElement('canvas');
       this.cameraStartPromise = null;
       this.lastCameraFallbackToPicker = false;
+      this.shouldResumeCamera = false;
     }
 
     setShareStatus(text) {
@@ -1111,8 +1112,13 @@
       window.addEventListener('pagehide', cleanup);
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'hidden') {
+          this.shouldResumeCamera = Boolean(this.state.smartshotAtivo && this.state.cameraStream);
           this.stopCameraStream();
           if (this.state.smartshotAtivo) this.updateCameraLabel('CÂMERA EM PAUSA', 'Toque no obturador para reativar a câmera');
+        }
+        if (document.visibilityState === 'visible' && this.shouldResumeCamera && this.state.smartshotAtivo && !this.state.cameraStream) {
+          this.shouldResumeCamera = false;
+          void this.startCamera();
         }
       });
     }
@@ -1145,7 +1151,10 @@
       this.smartshotCta.style.opacity = this.state.smartshotAtivo ? '1' : '.9';
       this.smartshotCta.style.filter = this.state.smartshotAtivo ? 'saturate(1.1)' : 'none';
       if (this.state.smartshotAtivo) void this.ensureCameraReady();
-      else this.stopCameraStream();
+      else {
+        this.shouldResumeCamera = false;
+        this.stopCameraStream();
+      }
     }
 
     setMode(modeName) {
