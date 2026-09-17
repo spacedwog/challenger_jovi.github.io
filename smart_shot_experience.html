@@ -1113,6 +1113,7 @@
       </a>
       <nav class="top-nav" aria-label="Navegação principal">
         <a href="#solution">SmartShot JOVI</a>
+        <a href="#shot-experience">Shot Experience</a>
         <a href="#instant-moments">Instant Moments</a>
         <a href="#quickshare-overlay">QuickShare Overlay</a>
         <a href="#resources">Recursos</a>
@@ -1245,6 +1246,36 @@
         </div>
       </section>
 
+      <section id="shot-experience" class="section shot-experience-section" aria-label="Shot Experience interativo em canvas">
+        <div class="section-inner shot-experience-inner">
+          <div class="section-copy">
+            <span class="tag">Shot Experience</span>
+            <h2>Visualização dinâmica com HTML5 Canvas<span class="lime-dot">.</span></h2>
+            <p>Simule o comportamento inteligente da câmera em tempo real: foco guiado, intensidade de luz e estilo visual para cada modo de captura.</p>
+          </div>
+
+          <div class="shot-experience-card premium-card">
+            <div class="shot-toolbar" role="group" aria-label="Selecionar modo de experiência">
+              <button type="button" class="shot-chip is-active" data-scene="0" aria-pressed="true">Noturno</button>
+              <button type="button" class="shot-chip" data-scene="1" aria-pressed="false">Retrato</button>
+              <button type="button" class="shot-chip" data-scene="2" aria-pressed="false">Produto</button>
+            </div>
+            <canvas id="shotExperienceCanvas" width="960" height="460" tabindex="0" aria-label="Pré-visualização interativa SmartShot" aria-describedby="shotCanvasHelp">
+              Seu navegador não suporta canvas.
+            </canvas>
+            <div class="shot-focus-controls" role="group" aria-label="Mover foco da pré-visualização">
+              <button type="button" class="shot-move move-up" data-move="up" aria-label="Mover foco para cima">↑</button>
+              <button type="button" class="shot-move move-left" data-move="left" aria-label="Mover foco para a esquerda">←</button>
+              <button type="button" class="shot-move move-right" data-move="right" aria-label="Mover foco para a direita">→</button>
+              <button type="button" class="shot-move move-down" data-move="down" aria-label="Mover foco para baixo">↓</button>
+            </div>
+            <p id="shotCanvasHelp" class="shot-help-text">Use os botões de direção ou as setas do teclado para mover o foco da cena no canvas.</p>
+            <p id="shotCanvasStatus" class="shot-status-text"></p>
+            <p id="shotCanvasLive" class="sr-only" aria-live="polite"></p>
+          </div>
+        </div>
+      </section>
+
       <section class="section pose-section">
         <div class="section-inner">
           <div class="section-copy">
@@ -1364,9 +1395,6 @@
       </section>
     </main>
   </div>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 
   <script>
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -1942,6 +1970,120 @@
   .impact-expected-section.is-visible {
     opacity: 1;
     transform: translateY(0);
+  }
+
+  .shot-experience-section {
+    padding-top: 48px;
+  }
+
+  .shot-experience-inner {
+    display: grid;
+    gap: 28px;
+  }
+
+  .shot-experience-card {
+    padding: 18px;
+  }
+
+  .shot-toolbar {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+
+  .shot-chip {
+    border: 1px solid rgba(255,255,255,.22);
+    background: rgba(255,255,255,.06);
+    color: #fff;
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    cursor: pointer;
+  }
+
+  .shot-chip.is-active {
+    border-color: rgba(168,255,47,.72);
+    background: rgba(168,255,47,.16);
+    color: #C8FF5A;
+  }
+
+  .shot-chip:focus-visible {
+    outline: 2px solid #C8FF5A;
+    outline-offset: 2px;
+  }
+
+  .shot-status-text {
+    margin: 10px 6px 2px;
+    color: #A9C7FF;
+    font-size: 13px;
+  }
+
+  .shot-help-text {
+    margin: 10px 6px 0;
+    color: #9CB7E6;
+    font-size: 12px;
+  }
+
+  .shot-focus-controls {
+    display: grid;
+    grid-template-columns: repeat(3, 34px);
+    grid-template-areas:
+      ". up ."
+      "left . right"
+      ". down .";
+    gap: 6px;
+    margin: 10px 0 0 6px;
+  }
+
+  .move-up { grid-area: up; }
+  .move-left { grid-area: left; }
+  .move-right { grid-area: right; }
+  .move-down { grid-area: down; }
+
+  .shot-move {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,.24);
+    background: rgba(255,255,255,.06);
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  .shot-move:focus-visible {
+    outline: 2px solid #C8FF5A;
+    outline-offset: 2px;
+  }
+
+  #shotExperienceCanvas:focus-visible {
+    outline: 2px solid #C8FF5A;
+    outline-offset: 3px;
+    box-shadow: 0 0 0 4px rgba(200,255,90,.22);
+  }
+
+  #shotExperienceCanvas {
+    width: 100%;
+    display: block;
+    border: 1px solid rgba(255,255,255,.14);
+    border-radius: 22px;
+    background: #050811;
+    min-height: 300px;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 
   .impact-expected-inner {
@@ -2747,6 +2889,297 @@
       defaultLayer.classList.add('is-active');
       defaultLayer.setAttribute('aria-hidden', 'false');
     });
+  })();
+</script>
+
+<script>
+  (() => {
+    if (window.__shotExperienceInitialized) return;
+    window.__shotExperienceInitialized = true;
+
+    const canvas = document.getElementById('shotExperienceCanvas');
+    const shotSection = document.getElementById('shot-experience');
+    const status = document.getElementById('shotCanvasStatus');
+    const liveStatus = document.getElementById('shotCanvasLive');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const chips = document.querySelectorAll('.shot-chip');
+    const moveControls = document.querySelectorAll('.shot-move');
+    if (!ctx || !chips.length) return;
+
+    const scenes = [
+      { top: '#1A1B42', bottom: '#050811', glow: '#8E62FF', accent: '#50E8FF', label: 'Modo Noturno · Luz baixa' },
+      { top: '#2A1232', bottom: '#080713', glow: '#FF4FD8', accent: '#C8FF5A', label: 'Modo Retrato · Foco no rosto' },
+      { top: '#102B26', bottom: '#06100E', glow: '#00F58A', accent: '#FF8A28', label: 'Modo Produto · Nitidez e contraste' }
+    ];
+
+    let sceneIndex = 0;
+    let mx = 0.5;
+    let my = 0.5;
+    let rafId = 0;
+    let resizeTimer = 0;
+    let isAnimating = false;
+    let isSectionVisible = true;
+    let isPageVisible = document.visibilityState === 'visible';
+    let usesVisibilityObserver = false;
+    let sectionObserver = null;
+    let logicalWidth = 0;
+    let logicalHeight = 0;
+    let canvasRect = null;
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let prefersReducedMotion = motionQuery.matches;
+
+    function hexToRgba(hex, alpha) {
+      const raw = hex.replace('#', '');
+      const safe = raw.length === 3 ? raw.split('').map((c) => c + c).join('') : raw;
+      const value = Number.parseInt(safe, 16);
+      const r = (value >> 16) & 255;
+      const g = (value >> 8) & 255;
+      const b = value & 255;
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+
+    function updateStatus(announce = true, updateVisible = true) {
+      const scene = scenes[sceneIndex];
+      const x = Math.round(mx * 100);
+      const y = Math.round(my * 100);
+      const message = `${scene.label}. Foco em ${x}% horizontal e ${y}% vertical.`;
+      if (updateVisible && status) status.textContent = message;
+      if (announce && liveStatus) liveStatus.textContent = message;
+    }
+
+    function resize() {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const rect = canvas.getBoundingClientRect();
+      canvasRect = rect;
+      logicalWidth = Math.max(1, Math.floor(rect.width));
+      logicalHeight = Math.max(1, Math.floor(rect.height));
+      canvas.width = Math.max(1, Math.floor(rect.width * dpr));
+      canvas.height = Math.max(1, Math.floor(rect.height * dpr));
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      if (prefersReducedMotion) drawFrame();
+    }
+
+    function drawGrid(w, h) {
+      ctx.save();
+      ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+      ctx.lineWidth = 1;
+      for (let x = 0; x <= w; x += 40) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, h);
+        ctx.stroke();
+      }
+      for (let y = 0; y <= h; y += 40) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(w, y);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    function drawFrame() {
+      const t = prefersReducedMotion ? 0 : performance.now() * 0.0014;
+      const w = logicalWidth;
+      const h = logicalHeight;
+      const scene = scenes[sceneIndex];
+
+      const grad = ctx.createLinearGradient(0, 0, 0, h);
+      grad.addColorStop(0, scene.top);
+      grad.addColorStop(1, scene.bottom);
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, w, h);
+
+      drawGrid(w, h);
+
+      const glowX = w * (0.2 + mx * 0.6);
+      const glowY = h * (0.25 + my * 0.25);
+      const glow = ctx.createRadialGradient(glowX, glowY, 10, glowX, glowY, 220);
+      glow.addColorStop(0, hexToRgba(scene.glow, 0.67));
+      glow.addColorStop(1, hexToRgba(scene.glow, 0));
+      ctx.fillStyle = glow;
+      ctx.fillRect(0, 0, w, h);
+
+      ctx.strokeStyle = `${scene.accent}CC`;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let x = 0; x <= w; x += 8) {
+        const y = h * 0.66 + Math.sin(x * 0.015 + t + sceneIndex) * 16 + Math.cos(x * 0.007 + t * 1.2) * 10;
+        if (x === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      const focusX = w * mx;
+      const focusY = h * my;
+      ctx.strokeStyle = '#C8FF5A';
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.arc(focusX, focusY, 36, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(focusX - 56, focusY);
+      ctx.lineTo(focusX - 18, focusY);
+      ctx.moveTo(focusX + 18, focusY);
+      ctx.lineTo(focusX + 56, focusY);
+      ctx.moveTo(focusX, focusY - 56);
+      ctx.lineTo(focusX, focusY - 18);
+      ctx.moveTo(focusX, focusY + 18);
+      ctx.lineTo(focusX, focusY + 56);
+      ctx.stroke();
+
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = '600 14px Inter, Arial, sans-serif';
+      ctx.textBaseline = 'top';
+      ctx.fillText(scene.label, 20, 18);
+    }
+
+    function render() {
+      if (!isAnimating) return;
+      drawFrame();
+      rafId = requestAnimationFrame(render);
+    }
+
+    function startRenderLoop() {
+      if (prefersReducedMotion || isAnimating || !isSectionVisible || !isPageVisible) return;
+      isAnimating = true;
+      rafId = requestAnimationFrame(render);
+    }
+
+    function stopRenderLoop() {
+      if (!isAnimating) return;
+      isAnimating = false;
+      cancelAnimationFrame(rafId);
+    }
+
+    chips.forEach((chip) => {
+      chip.addEventListener('click', () => {
+        const nextIndex = Number(chip.dataset.scene || 0);
+        if (!Number.isInteger(nextIndex) || nextIndex < 0 || nextIndex >= scenes.length) return;
+        sceneIndex = nextIndex;
+        chips.forEach((node) => {
+          const active = node === chip;
+          node.classList.toggle('is-active', active);
+          node.setAttribute('aria-pressed', String(active));
+        });
+        updateStatus();
+        if (prefersReducedMotion || !isAnimating) drawFrame();
+      });
+    });
+
+    canvas.addEventListener('mousemove', (event) => {
+      const rect = canvasRect || canvas.getBoundingClientRect();
+      mx = Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width));
+      my = Math.min(1, Math.max(0, (event.clientY - rect.top) / rect.height));
+      updateStatus(false, false);
+      if (prefersReducedMotion || !isAnimating) drawFrame();
+    });
+
+    canvas.addEventListener('mouseenter', () => {
+      canvasRect = canvas.getBoundingClientRect();
+    });
+
+    function moveFocus(direction) {
+      const step = 0.03;
+      if (direction === 'left') mx -= step;
+      else if (direction === 'right') mx += step;
+      else if (direction === 'up') my -= step;
+      else if (direction === 'down') my += step;
+      mx = Math.min(1, Math.max(0, mx));
+      my = Math.min(1, Math.max(0, my));
+      updateStatus();
+      if (prefersReducedMotion || !isAnimating) drawFrame();
+    }
+
+    moveControls.forEach((button) => {
+      button.addEventListener('click', () => {
+        moveFocus(button.dataset.move);
+      });
+    });
+
+    canvas.addEventListener('keydown', (event) => {
+      const map = {
+        ArrowUp: 'up',
+        ArrowDown: 'down',
+        ArrowLeft: 'left',
+        ArrowRight: 'right'
+      };
+      const direction = map[event.key];
+      if (!direction) return;
+      event.preventDefault();
+      moveFocus(direction);
+    });
+
+    const handleResize = () => {
+      window.clearTimeout(resizeTimer);
+      resizeTimer = window.setTimeout(() => {
+        resize();
+        if (!isAnimating) drawFrame();
+      }, 120);
+    };
+
+    const handleVisibilityChange = () => {
+      isPageVisible = document.visibilityState === 'visible';
+      if (isPageVisible) startRenderLoop();
+      else stopRenderLoop();
+    };
+
+    const handleMotionChange = (event) => {
+      prefersReducedMotion = event.matches;
+      if (prefersReducedMotion) {
+        stopRenderLoop();
+        drawFrame();
+      } else {
+        drawFrame();
+        startRenderLoop();
+      }
+    };
+
+    const teardown = () => {
+      window.clearTimeout(resizeTimer);
+      stopRenderLoop();
+      window.removeEventListener('resize', handleResize);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('beforeunload', teardown);
+      if (typeof motionQuery.removeEventListener === 'function') motionQuery.removeEventListener('change', handleMotionChange);
+      else if (typeof motionQuery.removeListener === 'function') motionQuery.removeListener(handleMotionChange);
+      if (sectionObserver) sectionObserver.disconnect();
+      window.__shotExperienceInitialized = false;
+    };
+
+    if (!prefersReducedMotion && shotSection && 'IntersectionObserver' in window) {
+      usesVisibilityObserver = true;
+      isSectionVisible = false;
+      sectionObserver = new IntersectionObserver((entries) => {
+        const sectionEntry = entries.find((entry) => entry.target === shotSection);
+        if (!sectionEntry) return;
+        isSectionVisible = sectionEntry.isIntersecting;
+        if (isSectionVisible) {
+          drawFrame();
+          startRenderLoop();
+        } else {
+          stopRenderLoop();
+        }
+      }, { threshold: 0.15 });
+      sectionObserver.observe(shotSection);
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    resize();
+    updateStatus();
+    if (typeof motionQuery.addEventListener === 'function') motionQuery.addEventListener('change', handleMotionChange);
+    else if (typeof motionQuery.addListener === 'function') motionQuery.addListener(handleMotionChange);
+    window.addEventListener('resize', handleResize);
+    if (prefersReducedMotion) drawFrame();
+    else {
+      if (!usesVisibilityObserver) {
+        drawFrame();
+        startRenderLoop();
+      }
+    }
+    window.addEventListener('beforeunload', teardown);
   })();
 </script>
 
