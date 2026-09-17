@@ -2864,6 +2864,7 @@
     let isSectionVisible = true;
     let isPageVisible = document.visibilityState === 'visible';
     let usesVisibilityObserver = false;
+    let sectionObserver = null;
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     function updateStatus() {
@@ -3019,10 +3020,25 @@
       resizeTimer = window.setTimeout(resize, 120);
     };
 
+    const handleVisibilityChange = () => {
+      isPageVisible = document.visibilityState === 'visible';
+      if (isPageVisible) startRenderLoop();
+      else stopRenderLoop();
+    };
+
+    const teardown = () => {
+      window.clearTimeout(resizeTimer);
+      stopRenderLoop();
+      window.removeEventListener('resize', handleResize);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('beforeunload', teardown);
+      if (sectionObserver) sectionObserver.disconnect();
+    };
+
     if (!prefersReducedMotion && shotSection && 'IntersectionObserver' in window) {
       usesVisibilityObserver = true;
       isSectionVisible = false;
-      const observer = new IntersectionObserver((entries) => {
+      sectionObserver = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
           isSectionVisible = entry.isIntersecting;
           if (isSectionVisible) {
@@ -3033,14 +3049,10 @@
           }
         });
       }, { threshold: 0.15 });
-      observer.observe(shotSection);
+      sectionObserver.observe(shotSection);
     }
 
-    document.addEventListener('visibilitychange', () => {
-      isPageVisible = document.visibilityState === 'visible';
-      if (isPageVisible) startRenderLoop();
-      else stopRenderLoop();
-    });
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     resize();
     updateStatus();
@@ -3050,10 +3062,7 @@
       drawFrame();
       if (!usesVisibilityObserver) startRenderLoop();
     }
-    window.addEventListener('beforeunload', () => {
-      window.clearTimeout(resizeTimer);
-      stopRenderLoop();
-    });
+    window.addEventListener('beforeunload', teardown);
   })();
 </script>
 
