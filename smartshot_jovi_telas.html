@@ -1007,10 +1007,12 @@
     }
 
     async switchCamera() {
+      const previousFacingMode = this.state.cameraFacingMode;
       this.state.cameraFacingMode = this.state.cameraFacingMode === 'user' ? 'environment' : 'user';
       const started = await this.startCamera();
       if (!started) {
-        this.state.cameraFacingMode = this.state.cameraFacingMode === 'user' ? 'environment' : 'user';
+        this.state.cameraFacingMode = previousFacingMode;
+        await this.startCamera();
       }
       return started;
     }
@@ -1103,7 +1105,7 @@
     async captureShot() {
       this.updateGuideByMode();
       const capturedFile = await this.capturePhotoFile();
-      if (!capturedFile) return;
+      if (!capturedFile) return false;
       this.syncFileInput(capturedFile);
       this.handleFileSelection(capturedFile);
       const qualidade = ['Alta', 'Alta', 'Média'][Math.floor(Math.random() * 3)];
@@ -1112,6 +1114,7 @@
       if (this.previewQualityLabel) this.previewQualityLabel.textContent = qualidade;
       this.setShareStatus('captura pronta para upload Java');
       this.screen4.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return true;
     }
 
     async runQuickAction(acao) {
@@ -1375,7 +1378,7 @@
       if (text.includes('desativar smartshot')) { this.toggleSmartShot(false); return 'SmartShot IA desativado.'; }
       if (text.includes('abrir câmera') || text.includes('abrir camera')) { return await this.ensureCameraReady() ? 'Câmera iniciada.' : 'Não consegui iniciar a câmera.'; }
       if (text.includes('trocar câmera') || text.includes('trocar camera') || text.includes('inverter câmera') || text.includes('inverter camera')) { return await this.switchCamera() ? 'Câmera alternada.' : 'Não consegui alternar a câmera.'; }
-      if (text.includes('capturar')) { await this.captureShot(); return 'Captura realizada.'; }
+      if (text.includes('capturar')) { return await this.captureShot() ? 'Captura realizada.' : 'Não consegui capturar a foto.'; }
       if (text.includes('aplicar modo')) { this.applyMode(); return `Modo ${this.state.modo} aplicado.`; }
       if (text.includes('salvar tudo')) { await this.saveAllGallery(); return 'Todas as capturas foram salvas.'; }
       if (text.includes('remover não selecionadas')) { this.removeUnselectedGallery(); return 'Itens não selecionados removidos da galeria.'; }
