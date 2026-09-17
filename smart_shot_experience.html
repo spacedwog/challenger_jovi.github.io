@@ -2049,12 +2049,6 @@
     min-height: 300px;
   }
 
-  #shotExperienceCanvas:focus-visible {
-    outline: 2px solid #C8FF5A;
-    outline-offset: 3px;
-    box-shadow: 0 0 0 4px rgba(200,255,90,.22);
-  }
-
   .sr-only {
     position: absolute;
     width: 1px;
@@ -2875,6 +2869,9 @@
 
 <script>
   (() => {
+    if (window.__shotExperienceInitialized) return;
+    window.__shotExperienceInitialized = true;
+
     const canvas = document.getElementById('shotExperienceCanvas');
     const shotSection = document.getElementById('shot-experience');
     const status = document.getElementById('shotCanvasStatus');
@@ -3090,6 +3087,7 @@
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('beforeunload', teardown);
       if (sectionObserver) sectionObserver.disconnect();
+      window.__shotExperienceInitialized = false;
     };
 
     if (!prefersReducedMotion && shotSection && 'IntersectionObserver' in window) {
