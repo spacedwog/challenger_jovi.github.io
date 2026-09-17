@@ -905,6 +905,7 @@
       this.flipButtons = [...document.querySelectorAll('.flip')];
       this.captureCanvas = document.createElement('canvas');
       this.cameraStartPromise = null;
+      this.lastCameraFallbackToPicker = false;
     }
 
     setShareStatus(text) {
@@ -1012,9 +1013,14 @@
     }
 
     async ensureCameraReady({ allowFilePicker = false } = {}) {
+      this.lastCameraFallbackToPicker = false;
       if (this.state.cameraReady && this.state.cameraStream) return true;
       const started = await this.startCamera();
-      if (!started && allowFilePicker) this.fileInput?.click();
+      if (!started && allowFilePicker) {
+        this.lastCameraFallbackToPicker = true;
+        this.updateUploadStatus('Selecione uma imagem manualmente para continuar o fluxo.', 'info');
+        this.fileInput?.click();
+      }
       return started;
     }
 
@@ -1032,7 +1038,7 @@
     async capturePhotoFile() {
       const ready = await this.ensureCameraReady({ allowFilePicker: true });
       if (!ready) {
-        this.updateUploadStatus('Não consegui iniciar a câmera. Use o seletor de arquivo para continuar.', 'error');
+        if (!this.lastCameraFallbackToPicker) this.updateUploadStatus('Não consegui iniciar a câmera. Use o seletor de arquivo para continuar.', 'error');
         return null;
       }
       const video = this.cameraVideos.find(item => item?.videoWidth && item?.videoHeight);
@@ -1095,12 +1101,9 @@
       const cleanup = () => this.stopCameraStream();
       window.addEventListener('beforeunload', cleanup);
       window.addEventListener('pagehide', cleanup);
-      window.addEventListener('pageshow', () => {
-        if (this.state.smartshotAtivo) void this.ensureCameraReady();
-      });
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'hidden') this.stopCameraStream();
-        if (document.visibilityState === 'visible' && this.state.smartshotAtivo) void this.ensureCameraReady();
+        if (document.visibilityState === 'visible' && this.state.smartshotAtivo && !this.state.cameraStream) void this.ensureCameraReady();
       });
     }
 
