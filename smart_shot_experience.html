@@ -1260,14 +1260,14 @@
               <button type="button" class="shot-chip" data-scene="1" aria-pressed="false">Retrato</button>
               <button type="button" class="shot-chip" data-scene="2" aria-pressed="false">Produto</button>
             </div>
-            <canvas id="shotExperienceCanvas" width="960" height="460" aria-label="Pré-visualização animada da experiência SmartShot" aria-describedby="shotCanvasHelp">
+            <canvas id="shotExperienceCanvas" width="960" height="460" tabindex="0" aria-label="Pré-visualização animada da experiência SmartShot" aria-describedby="shotCanvasHelp">
               Seu navegador não suporta canvas.
             </canvas>
             <div class="shot-focus-controls" role="group" aria-label="Mover foco da pré-visualização">
-              <button type="button" class="shot-move" data-move="left" aria-label="Mover foco para a esquerda">←</button>
-              <button type="button" class="shot-move" data-move="up" aria-label="Mover foco para cima">↑</button>
-              <button type="button" class="shot-move" data-move="down" aria-label="Mover foco para baixo">↓</button>
-              <button type="button" class="shot-move" data-move="right" aria-label="Mover foco para a direita">→</button>
+              <button type="button" class="shot-move move-up" data-move="up" aria-label="Mover foco para cima">↑</button>
+              <button type="button" class="shot-move move-left" data-move="left" aria-label="Mover foco para a esquerda">←</button>
+              <button type="button" class="shot-move move-right" data-move="right" aria-label="Mover foco para a direita">→</button>
+              <button type="button" class="shot-move move-down" data-move="down" aria-label="Mover foco para baixo">↓</button>
             </div>
             <p id="shotCanvasHelp" class="sr-only">Use os botões de direção para mover o foco da cena no canvas.</p>
             <p id="shotCanvasStatus" class="shot-status-text" aria-live="polite"></p>
@@ -2019,10 +2019,20 @@
   }
 
   .shot-focus-controls {
-    display: flex;
-    gap: 8px;
+    display: grid;
+    grid-template-columns: repeat(3, 34px);
+    grid-template-areas:
+      ". up ."
+      "left . right"
+      ". down .";
+    gap: 6px;
     margin: 10px 0 0 6px;
   }
+
+  .move-up { grid-area: up; }
+  .move-left { grid-area: left; }
+  .move-right { grid-area: right; }
+  .move-down { grid-area: down; }
 
   .shot-move {
     width: 34px;
@@ -2038,6 +2048,12 @@
   .shot-move:focus-visible {
     outline: 2px solid #C8FF5A;
     outline-offset: 2px;
+  }
+
+  #shotExperienceCanvas:focus-visible {
+    outline: 2px solid #C8FF5A;
+    outline-offset: 3px;
+    box-shadow: 0 0 0 4px rgba(200,255,90,.22);
   }
 
   #shotExperienceCanvas {
@@ -3067,6 +3083,19 @@
       button.addEventListener('click', () => {
         moveFocus(button.dataset.move);
       });
+    });
+
+    canvas.addEventListener('keydown', (event) => {
+      const map = {
+        ArrowUp: 'up',
+        ArrowDown: 'down',
+        ArrowLeft: 'left',
+        ArrowRight: 'right'
+      };
+      const direction = map[event.key];
+      if (!direction) return;
+      event.preventDefault();
+      moveFocus(direction);
     });
 
     const handleResize = () => {
