@@ -1033,8 +1033,8 @@
     }
 
     async switchCamera() {
-      const previousFacingMode = this.state.cameraFacingMode;
-      this.state.cameraFacingMode = this.state.cameraFacingMode === 'user' ? 'environment' : 'user';
+      const previousFacingMode = this.state.cameraFacingMode || 'user';
+      this.state.cameraFacingMode = previousFacingMode === 'user' ? 'environment' : 'user';
       const started = await this.startCamera();
       if (!started) {
         this.state.cameraFacingMode = previousFacingMode;
@@ -1110,8 +1110,10 @@
       window.addEventListener('beforeunload', cleanup);
       window.addEventListener('pagehide', cleanup);
       document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'hidden') this.stopCameraStream();
-        if (document.visibilityState === 'visible' && this.state.smartshotAtivo && !this.state.cameraStream) void this.ensureCameraReady();
+        if (document.visibilityState === 'hidden') {
+          this.stopCameraStream();
+          if (this.state.smartshotAtivo) this.updateCameraLabel('CÂMERA EM PAUSA', 'Toque no obturador para reativar a câmera');
+        }
       });
     }
 
