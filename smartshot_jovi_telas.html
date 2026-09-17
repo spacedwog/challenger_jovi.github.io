@@ -810,10 +810,12 @@
   </div>
 </div>
 
+<script src="smartshot_camera_helpers.js"></script>
 <script>
 (() => {
   const screens = [...document.querySelectorAll('.screen')];
   if (screens.length < 6) return;
+  const cameraHelpers = window.smartShotCameraHelpers;
 
   class SmartShotAIAgent {
     constructor(screensRef) {
@@ -1013,15 +1015,9 @@
         }
         const { stream, error } = await this.requestCameraStream();
         if (!stream) {
-          const denied = error?.name === 'NotAllowedError' || error?.name === 'SecurityError';
-          const insecure = !window.isSecureContext;
-          const message = denied
-            ? 'Permita o acesso à câmera para continuar.'
-            : insecure
-              ? 'Abra a página em HTTPS ou localhost para usar a câmera.'
-              : 'Não foi possível iniciar a câmera neste dispositivo.';
-          this.updateCameraLabel('CÂMERA BLOQUEADA', 'Permita acesso ou use o upload manual');
-          this.updateUploadStatus(message, 'error');
+          const failure = cameraHelpers.resolveCameraFailure(error, window.isSecureContext);
+          this.updateCameraLabel(failure.title, failure.detail);
+          this.updateUploadStatus(failure.message, 'error');
           return false;
         }
         try {
@@ -1073,6 +1069,11 @@
     }
 
     async switchCamera() {
+      if (!this.state.smartshotAtivo) {
+        this.updateCameraLabel('SMARTSHOT INATIVO', 'Ative o SmartShot IA para alternar a câmera');
+        this.updateUploadStatus('Ative o SmartShot IA antes de alternar a câmera.', 'info');
+        return false;
+      }
       const previousFacingMode = this.state.cameraFacingMode || 'user';
       const nextFacingMode = previousFacingMode === 'user' ? 'environment' : 'user';
       const { stream } = await this.requestCameraStream(nextFacingMode);
@@ -1151,18 +1152,18 @@
 
     bindLifecycle() {
       const cleanup = () => {
-        this.shouldResumeCamera = Boolean(this.state.smartshotAtivo && this.state.cameraStream);
+        this.shouldResumeCamera = cameraHelpers.computeResumeIntent(this.state.smartshotAtivo, Boolean(this.state.cameraStream));
         this.stopCameraStream();
       };
       window.addEventListener('beforeunload', cleanup);
       window.addEventListener('pagehide', cleanup);
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'hidden') {
-          this.shouldResumeCamera = Boolean(this.state.smartshotAtivo && this.state.cameraStream);
+          this.shouldResumeCamera = cameraHelpers.computeResumeIntent(this.state.smartshotAtivo, Boolean(this.state.cameraStream));
           this.stopCameraStream();
           if (this.state.smartshotAtivo) this.updateCameraLabel('CÂMERA EM PAUSA', 'Toque no obturador para reativar a câmera');
         }
-        if (document.visibilityState === 'visible' && this.shouldResumeCamera && this.state.smartshotAtivo && !this.state.cameraStream) {
+        if (cameraHelpers.shouldRestartCamera(document.visibilityState, this.shouldResumeCamera, this.state.smartshotAtivo, Boolean(this.state.cameraStream))) {
           void this.startCamera().then((started) => {
             this.shouldResumeCamera = !started;
           });
