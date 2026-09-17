@@ -1027,10 +1027,18 @@
       const started = await this.startCamera();
       if (!started && allowFilePicker) {
         this.lastCameraFallbackToPicker = true;
-        this.updateUploadStatus('Selecione uma imagem manualmente para continuar o fluxo.', 'info');
-        this.fileInput?.click();
       }
       return started;
+    }
+
+    async pickManualPhoto() {
+      if (!this.fileInput) return null;
+      this.updateUploadStatus('Selecione uma imagem manualmente para continuar o fluxo.', 'info');
+      return await new Promise((resolve) => {
+        const onChange = (event) => resolve(event.target.files?.[0] || null);
+        this.fileInput.addEventListener('change', onChange, { once: true });
+        this.fileInput.click();
+      });
     }
 
     async switchCamera() {
@@ -1047,7 +1055,8 @@
     async capturePhotoFile() {
       const ready = await this.ensureCameraReady({ allowFilePicker: true });
       if (!ready) {
-        if (!this.lastCameraFallbackToPicker) this.updateUploadStatus('Não consegui iniciar a câmera. Use o seletor de arquivo para continuar.', 'error');
+        if (this.lastCameraFallbackToPicker) return await this.pickManualPhoto();
+        this.updateUploadStatus('Não consegui iniciar a câmera. Use o seletor de arquivo para continuar.', 'error');
         return null;
       }
       const video = this.cameraVideos.find(item => item?.videoWidth && item?.videoHeight);
@@ -1117,8 +1126,9 @@
           if (this.state.smartshotAtivo) this.updateCameraLabel('CÂMERA EM PAUSA', 'Toque no obturador para reativar a câmera');
         }
         if (document.visibilityState === 'visible' && this.shouldResumeCamera && this.state.smartshotAtivo && !this.state.cameraStream) {
-          this.shouldResumeCamera = false;
-          void this.startCamera();
+          void this.startCamera().then((started) => {
+            this.shouldResumeCamera = !started;
+          });
         }
       });
     }
