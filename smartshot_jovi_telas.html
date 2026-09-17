@@ -904,6 +904,7 @@
       this.shutterButtons = [...document.querySelectorAll('.shutter')];
       this.flipButtons = [...document.querySelectorAll('.flip')];
       this.captureCanvas = document.createElement('canvas');
+      this.cameraStartPromise = null;
     }
 
     setShareStatus(text) {
@@ -958,48 +959,56 @@
     }
 
     async startCamera() {
-      if (!navigator.mediaDevices?.getUserMedia) {
-        this.updateCameraLabel('CÂMERA INDISPONÍVEL', 'Use o seletor de arquivo para enviar uma foto');
-        this.updateUploadStatus('Este navegador não suporta getUserMedia. Use o envio por arquivo como alternativa.', 'error');
-        return false;
-      }
-      this.stopCameraStream();
-      const attempts = [
-        { video: this.getVideoConstraints(), audio: false },
-        { video: true, audio: false }
-      ];
-      for (const constraints of attempts) {
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia(constraints);
-          const activeFacingMode = stream.getVideoTracks?.()[0]?.getSettings?.().facingMode || this.state.cameraFacingMode;
-          this.state.cameraStream = stream;
-          this.state.cameraReady = true;
-          this.state.cameraFacingMode = activeFacingMode || this.state.cameraFacingMode;
-          await Promise.all(this.cameraVideos.map(async (video) => {
-            video.srcObject = stream;
-            video.classList.toggle('is-front-camera', activeFacingMode === 'user');
-            await video.play().catch(() => undefined);
-            await this.waitForVideoFrame(video);
-          }));
-          this.updateCameraLabel('CÂMERA ONLINE', activeFacingMode === 'user' ? 'Prévia frontal ativa para desktop ou selfie' : activeFacingMode === 'environment' ? 'Prévia traseira ativa para captura mobile' : 'Prévia ativa para captura em desktop ou mobile');
-          this.updateUploadStatus('Câmera pronta para capturar foto em desktop ou mobile.', 'success');
-          return true;
-        } catch (error) {
-          if (constraints.video === true) {
-            const denied = error?.name === 'NotAllowedError' || error?.name === 'SecurityError';
-            const insecure = window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
-            const message = denied
-              ? 'Permita o acesso à câmera para continuar.'
-              : insecure
-                ? 'Abra a página em HTTPS ou localhost para usar a câmera.'
-                : 'Não foi possível iniciar a câmera neste dispositivo.';
-            this.updateCameraLabel('CÂMERA BLOQUEADA', 'Permita acesso ou use o upload manual');
-            this.updateUploadStatus(message, 'error');
-            return false;
+      if (this.cameraStartPromise) return this.cameraStartPromise;
+      this.cameraStartPromise = (async () => {
+        if (!navigator.mediaDevices?.getUserMedia) {
+          this.updateCameraLabel('CÂMERA INDISPONÍVEL', 'Use o seletor de arquivo para enviar uma foto');
+          this.updateUploadStatus('Este navegador não suporta getUserMedia. Use o envio por arquivo como alternativa.', 'error');
+          return false;
+        }
+        this.stopCameraStream();
+        const attempts = [
+          { video: this.getVideoConstraints(), audio: false },
+          { video: true, audio: false }
+        ];
+        for (const constraints of attempts) {
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia(constraints);
+            const activeFacingMode = stream.getVideoTracks?.()[0]?.getSettings?.().facingMode || this.state.cameraFacingMode;
+            this.state.cameraStream = stream;
+            this.state.cameraReady = true;
+            this.state.cameraFacingMode = activeFacingMode || this.state.cameraFacingMode;
+            await Promise.all(this.cameraVideos.map(async (video) => {
+              video.srcObject = stream;
+              video.classList.toggle('is-front-camera', activeFacingMode === 'user');
+              await video.play().catch(() => undefined);
+              await this.waitForVideoFrame(video);
+            }));
+            this.updateCameraLabel('CÂMERA ONLINE', activeFacingMode === 'user' ? 'Prévia frontal ativa para desktop ou selfie' : activeFacingMode === 'environment' ? 'Prévia traseira ativa para captura mobile' : 'Prévia ativa para captura em desktop ou mobile');
+            this.updateUploadStatus('Câmera pronta para capturar foto em desktop ou mobile.', 'success');
+            return true;
+          } catch (error) {
+            if (constraints.video === true) {
+              const denied = error?.name === 'NotAllowedError' || error?.name === 'SecurityError';
+              const insecure = window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+              const message = denied
+                ? 'Permita o acesso à câmera para continuar.'
+                : insecure
+                  ? 'Abra a página em HTTPS ou localhost para usar a câmera.'
+                  : 'Não foi possível iniciar a câmera neste dispositivo.';
+              this.updateCameraLabel('CÂMERA BLOQUEADA', 'Permita acesso ou use o upload manual');
+              this.updateUploadStatus(message, 'error');
+              return false;
+            }
           }
         }
+        return false;
+      })();
+      try {
+        return await this.cameraStartPromise;
+      } finally {
+        this.cameraStartPromise = null;
       }
-      return false;
     }
 
     async ensureCameraReady({ allowFilePicker = false } = {}) {
@@ -1057,13 +1066,12 @@
           lastModified: timestamp
         });
       } catch (_) {
+        Object.defineProperties(blob, {
+          name: { value: `smartshot-${timestamp}.jpg`, configurable: true },
+          lastModified: { value: timestamp, configurable: true }
+        });
       }
-      return {
-        blob,
-        name: `smartshot-${timestamp}.jpg`,
-        type: 'image/jpeg',
-        lastModified: timestamp
-      };
+      return blob;
     }
 
     getSelectedFileName(file) {
@@ -1124,6 +1132,7 @@
       this.smartshotCta.style.opacity = this.state.smartshotAtivo ? '1' : '.9';
       this.smartshotCta.style.filter = this.state.smartshotAtivo ? 'saturate(1.1)' : 'none';
       if (this.state.smartshotAtivo) void this.ensureCameraReady();
+      else this.stopCameraStream();
     }
 
     setMode(modeName) {
