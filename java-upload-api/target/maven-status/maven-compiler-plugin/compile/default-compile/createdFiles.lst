@@ -1,9 +1,0 @@
-io/jovi/upload/config/WebConfig.class
-io/jovi/upload/JavaUploadApiApplication.class
-io/jovi/upload/service/UploadStorageService.class
-io/jovi/upload/web/UploadController$GalleryResponse.class
-io/jovi/upload/web/UploadController$UploadResponse.class
-io/jovi/upload/model/GalleryRecord.class
-io/jovi/upload/web/UploadController$ShareResponse.class
-io/jovi/upload/web/UploadController.class
-io/jovi/upload/model/UploadRecord.class
