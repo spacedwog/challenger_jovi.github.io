@@ -824,7 +824,7 @@
         qualidade: 'Alta',
         plataforma: 'WhatsApp',
         apiBase: 'http://localhost:8080',
-        cameraFacingMode: /android|iphone|ipad|ipod/i.test(navigator.userAgent) ? 'environment' : 'user',
+        cameraFacingMode: null,
         cameraStream: null,
         cameraReady: false,
         selectedFile: null,
@@ -926,11 +926,12 @@
     }
 
     getVideoConstraints() {
-      return {
-        facingMode: { ideal: this.state.cameraFacingMode },
+      const constraints = {
         width: { ideal: 1280 },
         height: { ideal: 720 }
       };
+      if (this.state.cameraFacingMode) constraints.facingMode = { ideal: this.state.cameraFacingMode };
+      return constraints;
     }
 
     async waitForVideoFrame(video) {
@@ -970,15 +971,17 @@
       for (const constraints of attempts) {
         try {
           const stream = await navigator.mediaDevices.getUserMedia(constraints);
+          const activeFacingMode = stream.getVideoTracks?.()[0]?.getSettings?.().facingMode || this.state.cameraFacingMode;
           this.state.cameraStream = stream;
           this.state.cameraReady = true;
+          this.state.cameraFacingMode = activeFacingMode || this.state.cameraFacingMode;
           await Promise.all(this.cameraVideos.map(async (video) => {
             video.srcObject = stream;
-            video.classList.toggle('is-front-camera', this.state.cameraFacingMode === 'user');
+            video.classList.toggle('is-front-camera', activeFacingMode === 'user');
             await video.play().catch(() => undefined);
             await this.waitForVideoFrame(video);
           }));
-          this.updateCameraLabel('CÂMERA ONLINE', this.state.cameraFacingMode === 'user' ? 'Prévia frontal ativa para desktop ou selfie' : 'Prévia traseira ativa para captura mobile');
+          this.updateCameraLabel('CÂMERA ONLINE', activeFacingMode === 'user' ? 'Prévia frontal ativa para desktop ou selfie' : activeFacingMode === 'environment' ? 'Prévia traseira ativa para captura mobile' : 'Prévia ativa para captura em desktop ou mobile');
           this.updateUploadStatus('Câmera pronta para capturar foto em desktop ou mobile.', 'success');
           return true;
         } catch (error) {
@@ -1012,9 +1015,9 @@
       const started = await this.startCamera();
       if (!started) {
         this.state.cameraFacingMode = previousFacingMode;
-        await this.startCamera();
+        return await this.startCamera();
       }
-      return started;
+      return true;
     }
 
     async capturePhotoFile() {
@@ -1035,7 +1038,8 @@
       context.restore();
       const blob = await new Promise(resolve => this.captureCanvas.toBlob(resolve, 'image/jpeg', 0.92));
       if (!blob) return null;
-      return new File([blob], `smartshot-${Date.now()}.jpg`, { type: 'image/jpeg', lastModified: Date.now() });
+      const timestamp = Date.now();
+      return new File([blob], `smartshot-${timestamp}.jpg`, { type: 'image/jpeg', lastModified: timestamp });
     }
 
     syncFileInput(file) {
