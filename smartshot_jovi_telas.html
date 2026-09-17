@@ -999,7 +999,7 @@
           } catch (error) {
             if (constraints.video === true) {
               const denied = error?.name === 'NotAllowedError' || error?.name === 'SecurityError';
-              const insecure = window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+              const insecure = !window.isSecureContext;
               const message = denied
                 ? 'Permita o acesso à câmera para continuar.'
                 : insecure
