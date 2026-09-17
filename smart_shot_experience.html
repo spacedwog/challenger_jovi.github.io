@@ -1269,8 +1269,9 @@
               <button type="button" class="shot-move move-right" data-move="right" aria-label="Mover foco para a direita">→</button>
               <button type="button" class="shot-move move-down" data-move="down" aria-label="Mover foco para baixo">↓</button>
             </div>
-            <p id="shotCanvasHelp" class="sr-only">Use os botões de direção para mover o foco da cena no canvas.</p>
-            <p id="shotCanvasStatus" class="shot-status-text" aria-live="polite"></p>
+            <p id="shotCanvasHelp" class="sr-only">Use os botões de direção ou as setas do teclado para mover o foco da cena no canvas.</p>
+            <p id="shotCanvasStatus" class="shot-status-text"></p>
+            <p id="shotCanvasLive" class="sr-only" aria-live="polite"></p>
           </div>
         </div>
       </section>
@@ -2891,6 +2892,7 @@
     const canvas = document.getElementById('shotExperienceCanvas');
     const shotSection = document.getElementById('shot-experience');
     const status = document.getElementById('shotCanvasStatus');
+    const liveStatus = document.getElementById('shotCanvasLive');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     const chips = document.querySelectorAll('.shot-chip');
@@ -2916,7 +2918,8 @@
     let logicalWidth = 0;
     let logicalHeight = 0;
     let canvasRect = null;
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let prefersReducedMotion = motionQuery.matches;
 
     function hexToRgba(hex, alpha) {
       const raw = hex.replace('#', '');
@@ -2928,13 +2931,14 @@
       return `rgba(${r}, ${g}, ${b}, ${alpha})`;
     }
 
-    function updateStatus() {
-      if (!status) return;
+    function updateStatus(announce = true) {
       const scene = scenes[sceneIndex];
       const x = Math.round(mx * 100);
       const y = Math.round(my * 100);
-      status.textContent = `${scene.label}. Foco em ${x}% horizontal e ${y}% vertical.`;
-      canvas.setAttribute('aria-label', `${scene.label}. Foco em ${x}% horizontal e ${y}% vertical.`);
+      const message = `${scene.label}. Foco em ${x}% horizontal e ${y}% vertical.`;
+      if (status) status.textContent = message;
+      if (announce && liveStatus) liveStatus.textContent = message;
+      canvas.setAttribute('aria-label', message);
     }
 
     function resize() {
@@ -3061,7 +3065,7 @@
       const rect = canvasRect || canvas.getBoundingClientRect();
       mx = Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width));
       my = Math.min(1, Math.max(0, (event.clientY - rect.top) / rect.height));
-      updateStatus();
+      updateStatus(false);
       if (prefersReducedMotion || !isAnimating) drawFrame();
     });
 
@@ -3114,12 +3118,25 @@
       else stopRenderLoop();
     };
 
+    const handleMotionChange = (event) => {
+      prefersReducedMotion = event.matches;
+      if (prefersReducedMotion) {
+        stopRenderLoop();
+        drawFrame();
+      } else {
+        drawFrame();
+        startRenderLoop();
+      }
+    };
+
     const teardown = () => {
       window.clearTimeout(resizeTimer);
       stopRenderLoop();
       window.removeEventListener('resize', handleResize);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('beforeunload', teardown);
+      if (typeof motionQuery.removeEventListener === 'function') motionQuery.removeEventListener('change', handleMotionChange);
+      else if (typeof motionQuery.removeListener === 'function') motionQuery.removeListener(handleMotionChange);
       if (sectionObserver) sectionObserver.disconnect();
       window.__shotExperienceInitialized = false;
     };
@@ -3145,6 +3162,8 @@
 
     resize();
     updateStatus();
+    if (typeof motionQuery.addEventListener === 'function') motionQuery.addEventListener('change', handleMotionChange);
+    else if (typeof motionQuery.addListener === 'function') motionQuery.addListener(handleMotionChange);
     window.addEventListener('resize', handleResize);
     if (prefersReducedMotion) drawFrame();
     else {
