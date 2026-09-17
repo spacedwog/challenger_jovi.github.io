@@ -3039,15 +3039,15 @@
       usesVisibilityObserver = true;
       isSectionVisible = false;
       sectionObserver = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
-          isSectionVisible = entry.isIntersecting;
-          if (isSectionVisible) {
-            drawFrame();
-            startRenderLoop();
-          } else {
-            stopRenderLoop();
-          }
-        });
+        const sectionEntry = entries.find((entry) => entry.target === shotSection);
+        if (!sectionEntry) return;
+        isSectionVisible = sectionEntry.isIntersecting;
+        if (isSectionVisible) {
+          drawFrame();
+          startRenderLoop();
+        } else {
+          stopRenderLoop();
+        }
       }, { threshold: 0.15 });
       sectionObserver.observe(shotSection);
     }
