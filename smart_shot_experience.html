@@ -2015,6 +2015,12 @@
     min-height: 300px;
   }
 
+  #shotExperienceCanvas:focus-visible {
+    outline: 2px solid #C8FF5A;
+    outline-offset: 3px;
+    box-shadow: 0 0 0 4px rgba(200,255,90,.22);
+  }
+
   .sr-only {
     position: absolute;
     width: 1px;
@@ -3015,6 +3021,7 @@
 
     if (!prefersReducedMotion && shotSection && 'IntersectionObserver' in window) {
       usesVisibilityObserver = true;
+      isSectionVisible = false;
       const observer = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
           isSectionVisible = entry.isIntersecting;
@@ -3027,7 +3034,6 @@
         });
       }, { threshold: 0.15 });
       observer.observe(shotSection);
-      isSectionVisible = false;
     }
 
     document.addEventListener('visibilitychange', () => {
