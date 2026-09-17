@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SmartShot JOVI | Challenge</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    :root {
+      --brand-1: #1b2cff;
+      --brand-2: #00b4ff;
+      --dark-bg: #091227;
+      --card-bg: #111d38;
+    }
+    body {
+      background: radial-gradient(circle at top left, #142450, var(--dark-bg) 45%);
+      color: #eef3ff;
+    }
+    .hero {
+      padding: 6rem 0 4rem;
+    }
+    .glass {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(8px);
+    }
+    .section-title {
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .feature-card,
+    .step-card {
+      background: var(--card-bg);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: 0.2s ease;
+    }
+    .feature-card:hover,
+    .step-card:hover,
+    .step-card.active {
+      transform: translateY(-4px);
+      border-color: rgba(0, 180, 255, 0.6);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
+    }
+    .badge-soft {
+      background: rgba(0, 180, 255, 0.15);
+      color: #9ee7ff;
+      border: 1px solid rgba(0, 180, 255, 0.35);
+    }
+    .gradient-text {
+      background: linear-gradient(90deg, #7cd7ff, #6f89ff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .kpi {
+      font-size: clamp(1.8rem, 5vw, 2.5rem);
+      font-weight: 800;
+      line-height: 1;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark py-3">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="#">SmartShot <span class="text-info">JOVI</span></a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="menu">
+        <ul class="navbar-nav ms-auto gap-lg-2">
+          <li class="nav-item"><a class="nav-link" href="#solucao">Solução</a></li>
+          <li class="nav-item"><a class="nav-link" href="#jornada">Jornada</a></li>
+          <li class="nav-item"><a class="nav-link" href="#impacto">Impacto</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="container">
+      <div class="row align-items-center g-4">
+        <div class="col-lg-7">
+          <span class="badge rounded-pill badge-soft mb-3">Projeto Web • HTML/CSS/JS + Bootstrap</span>
+          <h1 class="display-4 fw-bold">A experiência de câmera <span class="gradient-text">mais inteligente</span> para o ecossistema JOVI.</h1>
+          <p class="lead text-light-emphasis mt-3">Interface interativa com jornada guiada para captura, sugestão de IA e compartilhamento rápido das melhores fotos.</p>
+          <a href="#solucao" class="btn btn-info btn-lg mt-3">Explorar solução</a>
+        </div>
+        <div class="col-lg-5">
+          <div class="glass rounded-4 p-4">
+            <h2 class="h5">Resumo do Challenge</h2>
+            <ul class="mb-0 ps-3 text-light-emphasis">
+              <li>Layout responsivo e profissional</li>
+              <li>Fluxo dinâmico com JavaScript</li>
+              <li>Foco total na experiência do usuário</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section id="solucao" class="py-5">
+      <div class="container">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+          <h2 class="section-title mb-0">Componentes da solução</h2>
+          <div class="btn-group" role="group" aria-label="Filtro de funcionalidades">
+            <button class="btn btn-outline-info active feature-filter" data-group="all">Todas</button>
+            <button class="btn btn-outline-info feature-filter" data-group="ia">IA</button>
+            <button class="btn btn-outline-info feature-filter" data-group="social">Social</button>
+          </div>
+        </div>
+        <div class="row g-3" id="featureList">
+          <div class="col-md-6 col-lg-4 feature-item" data-group="ia">
+            <article class="feature-card rounded-4 p-4 h-100">
+              <h3 class="h5">Smart Suggestion</h3>
+              <p class="text-light-emphasis mb-0">Ajustes automáticos de modo, luz e enquadramento para cada cenário.</p>
+            </article>
+          </div>
+          <div class="col-md-6 col-lg-4 feature-item" data-group="ia">
+            <article class="feature-card rounded-4 p-4 h-100">
+              <h3 class="h5">Score de Qualidade</h3>
+              <p class="text-light-emphasis mb-0">Pontuação em tempo real para apoiar a escolha da melhor captura.</p>
+            </article>
+          </div>
+          <div class="col-md-6 col-lg-4 feature-item" data-group="social">
+            <article class="feature-card rounded-4 p-4 h-100">
+              <h3 class="h5">QuickShare</h3>
+              <p class="text-light-emphasis mb-0">Compartilhamento instantâneo para redes sociais e contatos favoritos.</p>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="jornada" class="py-5">
+      <div class="container">
+        <h2 class="section-title mb-4">Jornada interativa do usuário</h2>
+        <div class="row g-3">
+          <div class="col-lg-4">
+            <button class="step-card active rounded-4 p-4 w-100 text-start text-white btn" data-step="1">
+              <strong>1. Captura</strong>
+              <small class="d-block text-light-emphasis">Usuário fotografa com assistência ativa.</small>
+            </button>
+          </div>
+          <div class="col-lg-4">
+            <button class="step-card rounded-4 p-4 w-100 text-start text-white btn" data-step="2">
+              <strong>2. Sugestão IA</strong>
+              <small class="d-block text-light-emphasis">Sistema recomenda melhorias automáticas.</small>
+            </button>
+          </div>
+          <div class="col-lg-4">
+            <button class="step-card rounded-4 p-4 w-100 text-start text-white btn" data-step="3">
+              <strong>3. Compartilhamento</strong>
+              <small class="d-block text-light-emphasis">Publicação rápida com um toque.</small>
+            </button>
+          </div>
+        </div>
+        <div class="glass rounded-4 p-4 mt-3" id="stepContent">
+          <h3 class="h5">Captura inteligente em tempo real</h3>
+          <p class="text-light-emphasis mb-0">A câmera identifica condições do ambiente e ativa automaticamente o melhor modo para aumentar qualidade e nitidez.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="impacto" class="py-5">
+      <div class="container">
+        <h2 class="section-title mb-4">Simulador de impacto</h2>
+        <div class="row g-4 align-items-center">
+          <div class="col-lg-7">
+            <label for="usuarios" class="form-label">Quantidade de usuários ativos por mês</label>
+            <input type="range" class="form-range" min="1000" max="100000" step="1000" value="25000" id="usuarios">
+            <p class="text-light-emphasis mb-0">Estimativa de fotos compartilhadas com QuickShare: <strong id="resultadoCompartilhamentos">62.500</strong></p>
+          </div>
+          <div class="col-lg-5">
+            <div class="glass rounded-4 p-4 text-center">
+              <div class="kpi" id="kpiRetencao">+18%</div>
+              <p class="text-light-emphasis mb-0">Projeção de ganho de retenção com jornada SmartShot.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="py-4 border-top border-light-subtle">
+    <div class="container text-center text-light-emphasis">
+      <small>Challenge JOVI • Equipe de Desenvolvimento Web • 2026</small>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const stepData = {
+      1: {
+        title: "Captura inteligente em tempo real",
+        text: "A câmera identifica condições do ambiente e ativa automaticamente o melhor modo para aumentar qualidade e nitidez."
+      },
+      2: {
+        title: "Sugestões de IA acionáveis",
+        text: "O sistema apresenta ajustes recomendados com linguagem simples para facilitar a tomada de decisão do usuário."
+      },
+      3: {
+        title: "QuickShare sem fricção",
+        text: "Após a seleção final, o envio para redes e contatos ocorre com poucos cliques, reduzindo tempo e esforço."
+      }
+    };
+
+    document.querySelectorAll(".feature-filter").forEach(button => {
+      button.addEventListener("click", () => {
+        document.querySelectorAll(".feature-filter").forEach(b => b.classList.remove("active"));
+        button.classList.add("active");
+        const group = button.dataset.group;
+        document.querySelectorAll(".feature-item").forEach(item => {
+          item.classList.toggle("d-none", group !== "all" && item.dataset.group !== group);
+        });
+      });
+    });
+
+    document.querySelectorAll(".step-card").forEach(card => {
+      card.addEventListener("click", () => {
+        const step = Number(card.dataset.step);
+        const data = stepData[step];
+        document.querySelectorAll(".step-card").forEach(c => c.classList.remove("active"));
+        card.classList.add("active");
+        document.getElementById("stepContent").innerHTML = `
+          <h3 class="h5">${data.title}</h3>
+          <p class="text-light-emphasis mb-0">${data.text}</p>
+        `;
+      });
+    });
+
+    const slider = document.getElementById("usuarios");
+    const output = document.getElementById("resultadoCompartilhamentos");
+    const kpi = document.getElementById("kpiRetencao");
+    const formatNumber = value => Number(value).toLocaleString("pt-BR");
+
+    function updateImpact() {
+      const users = Number(slider.value);
+      const shares = Math.round(users * 2.5);
+      const retention = (12 + users / 10000).toFixed(1);
+      output.textContent = formatNumber(shares);
+      kpi.textContent = `+${retention}%`;
+    }
+
+    slider.addEventListener("input", updateImpact);
+    updateImpact();
+  </script>
+</body>
+</html>
