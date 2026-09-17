@@ -843,6 +843,7 @@
       this.injectStyles();
       this.mapElements();
       this.bindAllActions();
+      this.bindLifecycle();
       this.mountAgentPanel();
       this.startGalleryTimer();
       this.updateGuideByMode();
@@ -1050,6 +1051,10 @@
       });
     }
 
+    bindLifecycle() {
+      window.addEventListener('beforeunload', () => this.stopCameraStream(), { once: true });
+    }
+
     updateGuideByMode() {
       const config = this.modoConfig[this.state.modo] || this.modoConfig.Selfie;
       this.state.qualidade = config.qualidade;
@@ -1098,15 +1103,14 @@
     async captureShot() {
       this.updateGuideByMode();
       const capturedFile = await this.capturePhotoFile();
-      if (capturedFile) {
-        this.syncFileInput(capturedFile);
-        this.handleFileSelection(capturedFile);
-      }
+      if (!capturedFile) return;
+      this.syncFileInput(capturedFile);
+      this.handleFileSelection(capturedFile);
       const qualidade = ['Alta', 'Alta', 'Média'][Math.floor(Math.random() * 3)];
       this.state.qualidade = qualidade;
       if (this.qualityTag) this.qualityTag.textContent = qualidade;
       if (this.previewQualityLabel) this.previewQualityLabel.textContent = qualidade;
-      this.setShareStatus(capturedFile ? 'captura pronta para upload Java' : 'capture a foto ou selecione um arquivo');
+      this.setShareStatus('captura pronta para upload Java');
       this.screen4.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
@@ -1461,7 +1465,6 @@
         const m = remainingMinutes % 60;
         if (this.galleryExpires) this.galleryExpires.textContent = `Expira em ${h}h ${String(m).padStart(2, '0')}min`;
       }, 60000);
-      window.addEventListener('beforeunload', () => this.stopCameraStream());
     }
   }
 
