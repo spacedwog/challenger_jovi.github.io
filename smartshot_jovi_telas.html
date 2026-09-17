@@ -847,7 +847,7 @@
       this.startGalleryTimer();
       this.updateGuideByMode();
       this.updateGalleryMeta();
-      this.updateUploadStatus('Selecione uma imagem e faça upload para integrar o fluxo ao backend Java.', 'info');
+      this.updateUploadStatus('Capture uma foto ou selecione uma imagem para integrar o fluxo ao backend Java.', 'info');
       this.setShareStatus('pronto para compartilhar');
     }
 
@@ -1228,6 +1228,7 @@
       if (this.uploadMediaPill) this.uploadMediaPill.textContent = file ? `Arquivo pronto: ${file.name}` : 'MIDIA aguardando upload';
       if (this.uploadGalleryPill) this.uploadGalleryPill.textContent = 'Daily Gallery sem item sincronizado';
       if (!file) {
+        this.updateThumbPreviews('');
         this.updateUploadStatus('Selecione uma imagem para iniciar o fluxo de upload.', 'info');
         return;
       }
@@ -1246,6 +1247,7 @@
       const assetUrl = this.resolveAssetUrl(upload.fileUrl);
       this.setPreviewImage(assetUrl);
       this.setGalleryPreview(assetUrl);
+      this.updateThumbPreviews(assetUrl);
       if (this.uploadMediaPill) this.uploadMediaPill.textContent = `MIDIA ${upload.mediaId} · CAPTURA ${upload.captureId} · ${upload.sizeKb} KB`;
       if (this.uploadGalleryPill) this.uploadGalleryPill.textContent = `Pronto para Daily Gallery · modo ${upload.mode}`;
     }
