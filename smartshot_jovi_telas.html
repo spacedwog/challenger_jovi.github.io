@@ -395,6 +395,25 @@
   .status-row .check{width:18px;height:18px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:900;flex-shrink:0}
   .status-row b{color:#137a3a}
 
+  .upload-lab{
+    max-width:1400px;margin:32px auto 0;padding:24px 28px;
+    border-radius:20px;border:1px solid var(--line);
+    background:rgba(12,29,64,.48);box-shadow:0 20px 50px rgba(0,0,0,.22);
+  }
+  .upload-lab h4{font-family:'Bricolage Grotesque',sans-serif;font-size:20px;font-weight:700;margin-bottom:8px}
+  .upload-lab p{color:var(--text-mute);font-size:14px;line-height:1.6}
+  .upload-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:18px;align-items:end}
+  .upload-field{display:flex;flex-direction:column;gap:8px;font-size:12px;font-weight:600;color:#dbe7ff}
+  .upload-field input{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:#081530;color:#eaf1ff;font:inherit}
+  .upload-field input::file-selector-button{margin-right:12px;border:none;border-radius:999px;padding:8px 12px;background:rgba(31,107,255,.18);color:#cfe2ff;font-weight:700;cursor:pointer}
+  .upload-submit{padding:13px 18px;border:none;border-radius:14px;background:linear-gradient(135deg,var(--blue),var(--blue-glow));color:#fff;font-weight:700;box-shadow:0 8px 20px rgba(31,107,255,.35);cursor:pointer}
+  .upload-meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+  .upload-pill{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.04);font-size:12px;color:#cfe2ff}
+  .upload-status{margin-top:14px;padding:12px 14px;border-radius:14px;border:1px solid transparent;background:rgba(255,255,255,.04)}
+  .upload-status[data-tone="success"]{color:#d7ffe3;background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.25)}
+  .upload-status[data-tone="error"]{color:#ffd7d7;background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.25)}
+  .upload-status[data-tone="loading"]{color:#d9ecff;background:rgba(31,107,255,.12);border-color:rgba(31,107,255,.25)}
+
   /* FOOTNOTE */
   .footnote{
     max-width:1400px;margin:64px auto 0;padding:28px 32px;
@@ -412,12 +431,13 @@
 <div class="page-head">
   <span class="eyebrow">Etapa 3 — Protótipo</span>
   <h1>SmartShot <em>JOVI</em><br>Web App Mobile First</h1>
-  <p>Webapp 100% rodando no navegador do celular, projetada para integrar-se à experiência de câmera da JOVI sem instalação de aplicativo. Captura via API do navegador, IA orientadora em tempo real e curadoria de 24h.</p>
+  <p>Webapp 100% rodando no navegador do celular, projetada para integrar-se à experiência de câmera da JOVI sem instalação de aplicativo. Captura via API do navegador, IA orientadora em tempo real, curadoria de 24h e upload conectado a um backend Java.</p>
   <div class="badges">
     <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7v10c0 5 4 8 10 8s10-3 10-8V7L12 2z"/></svg>100% Web</span>
     <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="18" r="1"/></svg>Mobile First</span>
     <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3 7h7l-5.5 4 2 7L12 16l-6.5 4 2-7L2 9h7l3-7z"/></svg>Prototipado no Figma</span>
     <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l2 2"/></svg>Carregamento otimizado</span>
+    <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/><path d="M7 7h10v10H7z"/></svg>Upload Java integrado</span>
   </div>
 </div>
 
@@ -749,6 +769,27 @@
 
 </div>
 
+<section class="upload-lab" aria-label="Integração com upload Java">
+  <h4>Integração com upload Java</h4>
+  <p>Conecte o protótipo ao backend em Java para enviar uma foto real por multipart/form-data, registrar CAPTURA/MIDIA e refletir o resultado nas etapas de Daily Gallery e QuickShare.</p>
+  <div class="upload-grid">
+    <label class="upload-field">
+      <span>Base da API Java</span>
+      <input class="upload-api-base" type="url" value="http://localhost:8080" placeholder="http://localhost:8080">
+    </label>
+    <label class="upload-field">
+      <span>Foto para upload</span>
+      <input class="upload-file-input" type="file" accept="image/*">
+    </label>
+    <button class="upload-submit" type="button">Fazer upload para a API</button>
+  </div>
+  <div class="upload-meta">
+    <span class="upload-pill upload-media-pill">MIDIA aguardando upload</span>
+    <span class="upload-pill upload-gallery-pill">Daily Gallery sem item sincronizado</span>
+  </div>
+  <p class="upload-status" data-tone="info">Selecione uma imagem e execute <code>mvn spring-boot:run</code> dentro de <code>java-upload-api</code> para ativar a integração.</p>
+</section>
+
 <div class="footnote">
   <div class="ic">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:22px;height:22px"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
@@ -773,7 +814,12 @@
         smartshotAtivo: false,
         modo: 'Selfie',
         qualidade: 'Alta',
-        plataforma: 'WhatsApp'
+        plataforma: 'WhatsApp',
+        apiBase: 'http://localhost:8080',
+        selectedFile: null,
+        uploadedMedia: null,
+        previewObjectUrl: null,
+        galleryLinked: false
       };
       this.modoConfig = {
         Selfie: { qualidade: 'Alta', feedback: ['Boa iluminação detectada', 'Afaste levemente o celular', 'Ângulo ideal encontrado'] },
@@ -790,6 +836,7 @@
       this.startGalleryTimer();
       this.updateGuideByMode();
       this.updateGalleryMeta();
+      this.updateUploadStatus('Selecione uma imagem e faça upload para integrar o fluxo ao backend Java.', 'info');
       this.setShareStatus('pronto para compartilhar');
     }
 
@@ -821,6 +868,7 @@
       this.modeGuideLabel = screen3.querySelector('.mode-pill');
       this.qualityTag = screen3.querySelector('.quality-tag b');
       this.feedbackRows = [...screen3.querySelectorAll('.feedback-card .fb-row')];
+      this.postPhoto = screen4.querySelector('.post-photo');
       this.previewModeLabel = screen4.querySelectorAll('.info-line b')[1];
       this.previewQualityLabel = screen4.querySelectorAll('.info-line b')[0];
       this.quickButtons = [...screen4.querySelectorAll('.quick-btn')];
@@ -832,10 +880,22 @@
       this.shareSocialCells = [...screen6.querySelectorAll('.social-cell')];
       this.shareActionCells = [...screen6.querySelectorAll('.action-cell')];
       this.shareStatus = screen6.querySelector('.status-row b');
+      this.apiBaseInput = document.querySelector('.upload-api-base');
+      this.fileInput = document.querySelector('.upload-file-input');
+      this.uploadSubmitButton = document.querySelector('.upload-submit');
+      this.uploadStatus = document.querySelector('.upload-status');
+      this.uploadMediaPill = document.querySelector('.upload-media-pill');
+      this.uploadGalleryPill = document.querySelector('.upload-gallery-pill');
     }
 
     setShareStatus(text) {
       if (this.shareStatus) this.shareStatus.textContent = text;
+    }
+
+    updateUploadStatus(text, tone = 'info') {
+      if (!this.uploadStatus) return;
+      this.uploadStatus.textContent = text;
+      this.uploadStatus.dataset.tone = tone;
     }
 
     updateGuideByMode() {
@@ -888,10 +948,11 @@
       this.state.qualidade = qualidade;
       if (this.qualityTag) this.qualityTag.textContent = qualidade;
       if (this.previewQualityLabel) this.previewQualityLabel.textContent = qualidade;
+      this.setShareStatus('captura pronta para upload Java');
       this.screen4.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
-    runQuickAction(acao) {
+    async runQuickAction(acao) {
       this.quickButtons.forEach(item => item.classList.remove('is-active'));
       const target = this.quickButtons.find(button => button.textContent.replace(/\s+/g, ' ').toLowerCase().includes(acao.toLowerCase()));
       if (!target) return;
@@ -899,11 +960,21 @@
       const label = target.textContent.replace(/\s+/g, ' ').trim();
       if (/Compartilhar/i.test(label)) this.setShareStatus('pronto para compartilhar');
       else if (/Editar IA/i.test(label)) this.setShareStatus('edição inteligente aplicada');
-      else if (/Salvar/i.test(label)) this.setShareStatus('salvo no dispositivo');
-      else if (/Daily Gallery/i.test(label)) this.setShareStatus('enviado para Daily Gallery');
+      else if (/Salvar/i.test(label)) {
+        const upload = await this.ensureUploadedMedia();
+        if (upload) {
+          this.setShareStatus('upload salvo na API Java');
+          this.updateUploadStatus(`Upload concluído com mediaId ${upload.mediaId}.`, 'success');
+        }
+      } else if (/Daily Gallery/i.test(label)) {
+        await this.sendToGallery();
+      }
     }
 
-    sendToGallery() {
+    async sendToGallery() {
+      const upload = await this.ensureUploadedMedia();
+      if (!upload) return;
+      await this.addUploadedMediaToGallery();
       const firstVisible = this.galleryCells.find(cell => !cell.classList.contains('is-hidden'));
       if (firstVisible) firstVisible.classList.add('selected');
       this.updateGalleryMeta();
@@ -915,12 +986,14 @@
       this.updateGalleryMeta();
     }
 
-    saveSelectedGallery() {
+    async saveSelectedGallery() {
+      if (this.state.uploadedMedia && !this.state.galleryLinked) await this.addUploadedMediaToGallery();
       this.setShareStatus('selecionados salvos para compartilhar');
     }
 
-    saveAllGallery() {
+    async saveAllGallery() {
       this.galleryCells.forEach(cell => { if (!cell.classList.contains('is-hidden')) cell.classList.add('selected'); });
+      if (this.state.uploadedMedia && !this.state.galleryLinked) await this.addUploadedMediaToGallery();
       this.updateGalleryMeta();
       this.setShareStatus('todas as capturas foram salvas');
     }
@@ -941,21 +1014,171 @@
       return true;
     }
 
+    resolveApiBase() {
+      const base = (this.apiBaseInput?.value || this.state.apiBase || 'http://localhost:8080').trim().replace(/\/$/, '');
+      this.state.apiBase = base || 'http://localhost:8080';
+      if (this.apiBaseInput) this.apiBaseInput.value = this.state.apiBase;
+      return this.state.apiBase;
+    }
+
+    buildApiUrl(path) {
+      return `${this.resolveApiBase()}${path}`;
+    }
+
+    resolveAssetUrl(path) {
+      if (!path) return '';
+      if (/^https?:\/\//i.test(path)) return path;
+      return this.buildApiUrl(path.startsWith('/') ? path : `/${path}`);
+    }
+
+    async fetchJson(url, options = {}) {
+      const response = await fetch(url, options);
+      const raw = await response.text();
+      let payload = {};
+      if (raw) {
+        try {
+          payload = JSON.parse(raw);
+        } catch (_) {
+          payload = { message: raw };
+        }
+      }
+      if (!response.ok) throw new Error(payload.message || 'Falha ao comunicar com a API Java.');
+      return payload;
+    }
+
+    setPreviewImage(url) {
+      if (!this.postPhoto || !url) return;
+      this.postPhoto.style.backgroundImage = `linear-gradient(180deg, rgba(10,21,48,.05), rgba(10,21,48,.38)), url("${url}")`;
+      this.postPhoto.style.backgroundSize = 'cover';
+      this.postPhoto.style.backgroundPosition = 'center';
+    }
+
+    setGalleryPreview(url) {
+      const firstCell = this.galleryCells[0];
+      if (!firstCell || !url) return;
+      const pic = firstCell.querySelector('.pic');
+      if (pic) {
+        pic.style.backgroundImage = `linear-gradient(180deg, rgba(10,21,48,.05), rgba(10,21,48,.42)), url("${url}")`;
+        pic.style.backgroundSize = 'cover';
+        pic.style.backgroundPosition = 'center';
+      }
+      let tag = firstCell.querySelector('.gal-tag');
+      if (!tag) {
+        tag = document.createElement('div');
+        tag.className = 'gal-tag good';
+        firstCell.appendChild(tag);
+      }
+      tag.className = 'gal-tag good';
+      tag.textContent = this.state.galleryLinked ? 'Sincronizada' : 'Upload Java';
+      firstCell.classList.remove('is-hidden');
+    }
+
+    handleFileSelection(file) {
+      this.state.selectedFile = file || null;
+      this.state.uploadedMedia = null;
+      this.state.galleryLinked = false;
+      if (this.uploadMediaPill) this.uploadMediaPill.textContent = file ? `Arquivo pronto: ${file.name}` : 'MIDIA aguardando upload';
+      if (this.uploadGalleryPill) this.uploadGalleryPill.textContent = 'Daily Gallery sem item sincronizado';
+      if (!file) {
+        this.updateUploadStatus('Selecione uma imagem para iniciar o fluxo de upload.', 'info');
+        return;
+      }
+      if (this.state.previewObjectUrl) URL.revokeObjectURL(this.state.previewObjectUrl);
+      this.state.previewObjectUrl = URL.createObjectURL(file);
+      this.setPreviewImage(this.state.previewObjectUrl);
+      this.setGalleryPreview(this.state.previewObjectUrl);
+      this.updateUploadStatus(`Arquivo ${file.name} pronto para upload no backend Java.`, 'info');
+      this.setShareStatus('arquivo carregado localmente');
+    }
+
+    applyUploadResult(upload) {
+      this.state.uploadedMedia = upload;
+      this.state.galleryLinked = false;
+      const assetUrl = this.resolveAssetUrl(upload.fileUrl);
+      this.setPreviewImage(assetUrl);
+      this.setGalleryPreview(assetUrl);
+      if (this.uploadMediaPill) this.uploadMediaPill.textContent = `MIDIA ${upload.mediaId} · CAPTURA ${upload.captureId} · ${upload.sizeKb} KB`;
+      if (this.uploadGalleryPill) this.uploadGalleryPill.textContent = `Pronto para Daily Gallery · modo ${upload.mode}`;
+    }
+
+    async uploadSelectedFile({ announce = true } = {}) {
+      if (!this.state.selectedFile) {
+        this.updateUploadStatus('Selecione uma imagem antes de chamar a API Java.', 'error');
+        return null;
+      }
+      const formData = new FormData();
+      formData.append('file', this.state.selectedFile);
+      formData.append('userId', '1');
+      formData.append('mode', this.state.modo);
+      formData.append('quality', this.state.qualidade);
+      formData.append('captureType', 'smartshot-web');
+      this.updateUploadStatus(`Enviando ${this.state.selectedFile.name} para ${this.resolveApiBase()}...`, 'loading');
+      try {
+        const upload = await this.fetchJson(this.buildApiUrl('/api/uploads'), { method: 'POST', body: formData });
+        this.applyUploadResult(upload);
+        if (announce) this.updateUploadStatus(`Upload concluído com sucesso. MIDIA ${upload.mediaId} disponível para compartilhar.`, 'success');
+        this.setShareStatus('upload pronto para compartilhar');
+        return upload;
+      } catch (error) {
+        this.updateUploadStatus(error.message, 'error');
+        this.setShareStatus('falha no upload');
+        return null;
+      }
+    }
+
+    async ensureUploadedMedia() {
+      if (this.state.uploadedMedia) return this.state.uploadedMedia;
+      return this.uploadSelectedFile();
+    }
+
+    async addUploadedMediaToGallery() {
+      const upload = await this.ensureUploadedMedia();
+      if (!upload) return null;
+      if (this.state.galleryLinked) return upload;
+      this.updateUploadStatus(`Vinculando MIDIA ${upload.mediaId} à Daily Gallery...`, 'loading');
+      try {
+        const gallery = await this.fetchJson(this.buildApiUrl(`/api/uploads/${upload.mediaId}/gallery?userId=1`), { method: 'POST' });
+        this.state.galleryLinked = true;
+        this.setGalleryPreview(this.resolveAssetUrl(upload.fileUrl));
+        if (this.uploadGalleryPill) this.uploadGalleryPill.textContent = `Gallery ${gallery.galleryId} · item ${gallery.galleryItemId} sincronizado`;
+        this.updateUploadStatus(`Daily Gallery atualizada com o item ${gallery.galleryItemId}.`, 'success');
+        this.setShareStatus('enviado para Daily Gallery');
+        return gallery;
+      } catch (error) {
+        this.updateUploadStatus(error.message, 'error');
+        return null;
+      }
+    }
+
     async runShareAction(actionName) {
       this.shareActionCells.forEach(item => item.classList.remove('is-active'));
       const target = this.shareActionCells.find(cell => (cell.querySelector('b')?.textContent || '').trim() === actionName);
       if (!target) return false;
       target.classList.add('is-active');
       if (actionName === 'Copiar link') {
-        const demoLink = `https://smartshot.jovi.app/share?mode=${encodeURIComponent(this.state.modo.toLowerCase())}`;
+        const upload = await this.ensureUploadedMedia();
+        const link = upload ? this.resolveAssetUrl(upload.fileUrl) : `https://smartshot.jovi.app/share?mode=${encodeURIComponent(this.state.modo.toLowerCase())}`;
         try {
-          await navigator.clipboard.writeText(demoLink);
+          await navigator.clipboard.writeText(link);
           this.setShareStatus(`link copiado (${this.state.plataforma})`);
+          this.updateUploadStatus('Link da mídia copiado para a área de transferência.', 'success');
         } catch (_) {
           this.setShareStatus('link pronto para cópia manual');
+          this.updateUploadStatus(`Copie manualmente o link: ${link}`, 'info');
         }
       } else if (actionName === 'Enviar agora') {
-        this.setShareStatus(`enviado via ${this.state.plataforma}`);
+        const upload = await this.ensureUploadedMedia();
+        if (!upload) return false;
+        this.updateUploadStatus(`Acionando compartilhamento via ${this.state.plataforma}...`, 'loading');
+        try {
+          const share = await this.fetchJson(this.buildApiUrl(`/api/uploads/${upload.mediaId}/share?platform=${encodeURIComponent(this.state.plataforma)}`), { method: 'POST' });
+          this.setShareStatus(`enviado via ${share.platform}`);
+          this.updateUploadStatus(share.message, 'success');
+        } catch (error) {
+          this.setShareStatus('falha no compartilhamento');
+          this.updateUploadStatus(error.message, 'error');
+          return false;
+        }
       }
       return true;
     }
@@ -972,7 +1195,8 @@
         saveAllGallery: () => this.saveAllGallery(),
         removeUnselectedGallery: () => this.removeUnselectedGallery(),
         selectPlatform: () => this.selectPlatform(payload.platform || 'WhatsApp'),
-        runShareAction: () => this.runShareAction(payload.action || 'Copiar link')
+        runShareAction: () => this.runShareAction(payload.action || 'Copiar link'),
+        uploadSelectedFile: () => this.uploadSelectedFile()
       };
       if (!handlers[action]) return false;
       await handlers[action]();
@@ -986,10 +1210,12 @@
       if (text.includes('desativar smartshot')) { this.toggleSmartShot(false); return 'SmartShot IA desativado.'; }
       if (text.includes('capturar')) { this.captureShot(); return 'Captura simulada realizada.'; }
       if (text.includes('aplicar modo')) { this.applyMode(); return `Modo ${this.state.modo} aplicado.`; }
-      if (text.includes('salvar tudo')) { this.saveAllGallery(); return 'Todas as capturas foram salvas.'; }
+      if (text.includes('salvar tudo')) { await this.saveAllGallery(); return 'Todas as capturas foram salvas.'; }
       if (text.includes('remover não selecionadas')) { this.removeUnselectedGallery(); return 'Itens não selecionados removidos da galeria.'; }
+      if (text.includes('upload')) { const upload = await this.uploadSelectedFile(); return upload ? `Upload concluído com MIDIA ${upload.mediaId}.` : 'Upload não concluído.'; }
       if (text.includes('enviar agora')) { await this.runShareAction('Enviar agora'); return `Envio realizado via ${this.state.plataforma}.`; }
       if (text.includes('copiar link')) { await this.runShareAction('Copiar link'); return `Link preparado para ${this.state.plataforma}.`; }
+      if (text.includes('daily gallery')) { await this.sendToGallery(); return 'Imagem enviada para a Daily Gallery.'; }
       if (text.includes('whatsapp') || text.includes('instagram') || text.includes('tiktok') || text.includes('link')) {
         const platform = text.includes('instagram') ? 'Instagram' : text.includes('tiktok') ? 'TikTok' : text.includes('link') ? 'Link' : 'WhatsApp';
         this.selectPlatform(platform);
@@ -1001,7 +1227,7 @@
           return `Modo ${mode} selecionado. Diga "aplicar modo" para concluir.`;
         }
       }
-      return 'Comando não reconhecido. Exemplos: "ativar smartshot", "modo retrato", "capturar", "copiar link".';
+      return 'Comando não reconhecido. Exemplos: "upload", "ativar smartshot", "modo retrato", "capturar".';
     }
 
     bindAllActions() {
@@ -1009,14 +1235,20 @@
       this.modeCells.forEach(cell => cell.addEventListener('click', () => this.setMode(cell.textContent.trim().split('\n').pop().trim())));
       this.applyModeButton?.addEventListener('click', () => this.applyMode());
       this.screen3.querySelectorAll('.shutter').forEach(shutter => shutter.addEventListener('click', () => this.captureShot()));
-      this.quickButtons.forEach(button => button.addEventListener('click', () => this.runQuickAction(button.textContent)));
-      this.saveToGallery?.addEventListener('click', () => this.sendToGallery());
+      this.quickButtons.forEach(button => button.addEventListener('click', () => void this.runQuickAction(button.textContent)));
+      this.saveToGallery?.addEventListener('click', () => void this.sendToGallery());
       this.galleryCells.forEach(cell => cell.addEventListener('click', () => this.toggleGalleryCell(cell)));
-      this.galleryButtons[0]?.addEventListener('click', () => this.saveSelectedGallery());
-      this.galleryButtons[1]?.addEventListener('click', () => this.saveAllGallery());
+      this.galleryButtons[0]?.addEventListener('click', () => void this.saveSelectedGallery());
+      this.galleryButtons[1]?.addEventListener('click', () => void this.saveAllGallery());
       this.galleryButtons[2]?.addEventListener('click', () => this.removeUnselectedGallery());
       this.shareSocialCells.forEach(cell => cell.addEventListener('click', () => this.selectPlatform(cell.textContent.trim())));
-      this.shareActionCells.forEach(cell => cell.addEventListener('click', () => this.runShareAction(cell.querySelector('b')?.textContent?.trim() || '')));
+      this.shareActionCells.forEach(cell => cell.addEventListener('click', () => void this.runShareAction(cell.querySelector('b')?.textContent?.trim() || '')));
+      this.fileInput?.addEventListener('change', (event) => this.handleFileSelection(event.target.files?.[0] || null));
+      this.apiBaseInput?.addEventListener('change', () => {
+        this.resolveApiBase();
+        this.updateUploadStatus(`Base da API atualizada para ${this.state.apiBase}.`, 'info');
+      });
+      this.uploadSubmitButton?.addEventListener('click', () => void this.uploadSelectedFile());
     }
 
     mountAgentPanel() {
@@ -1025,7 +1257,7 @@
       wrap.innerHTML = `
         <p class="ai-agent-title">Agente IA JavaScript</p>
         <div class="ai-agent-row">
-          <input class="ai-agent-input" type="text" placeholder="Ex: ativar smartshot, modo retrato, capturar, enviar agora" />
+          <input class="ai-agent-input" type="text" placeholder="Ex: upload, ativar smartshot, modo retrato, enviar agora" />
           <button class="ai-agent-btn" type="button">Executar</button>
         </div>
         <ul class="ai-agent-log"></ul>
@@ -1047,7 +1279,7 @@
       this.agentInput?.addEventListener('keydown', (event) => {
         if (event.key === 'Enter') runCommand();
       });
-      this.pushLog('Agente: Pronto para comandar todas as funções JavaScript do protótipo.');
+      this.pushLog('Agente: Pronto para comandar as funções JavaScript e o upload integrado ao backend Java.');
     }
 
     pushLog(text) {
