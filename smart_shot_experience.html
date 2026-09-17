@@ -1269,7 +1269,7 @@
               <button type="button" class="shot-move move-right" data-move="right" aria-label="Mover foco para a direita">→</button>
               <button type="button" class="shot-move move-down" data-move="down" aria-label="Mover foco para baixo">↓</button>
             </div>
-            <p id="shotCanvasHelp" class="sr-only">Use os botões de direção ou as setas do teclado para mover o foco da cena no canvas.</p>
+            <p id="shotCanvasHelp" class="shot-help-text">Use os botões de direção ou as setas do teclado para mover o foco da cena no canvas.</p>
             <p id="shotCanvasStatus" class="shot-status-text"></p>
             <p id="shotCanvasLive" class="sr-only" aria-live="polite"></p>
           </div>
@@ -2022,6 +2022,12 @@
     margin: 10px 6px 2px;
     color: #A9C7FF;
     font-size: 13px;
+  }
+
+  .shot-help-text {
+    margin: 10px 6px 0;
+    color: #9CB7E6;
+    font-size: 12px;
   }
 
   .shot-focus-controls {
