@@ -917,7 +917,11 @@
 
     updateCameraLabel(title, detail) {
       if (!this.cameraStatusLabel) return;
-      this.cameraStatusLabel.innerHTML = `<small>${title}</small>${detail}`;
+      this.cameraStatusLabel.textContent = '';
+      const label = document.createElement('small');
+      label.textContent = title;
+      this.cameraStatusLabel.appendChild(label);
+      this.cameraStatusLabel.append(detail);
     }
 
     getVideoConstraints() {
@@ -1019,7 +1023,13 @@
       this.captureCanvas.height = video.videoHeight;
       const context = this.captureCanvas.getContext('2d');
       if (!context) return null;
+      context.save();
+      if (this.state.cameraFacingMode === 'user') {
+        context.translate(this.captureCanvas.width, 0);
+        context.scale(-1, 1);
+      }
       context.drawImage(video, 0, 0, this.captureCanvas.width, this.captureCanvas.height);
+      context.restore();
       const blob = await new Promise(resolve => this.captureCanvas.toBlob(resolve, 'image/jpeg', 0.92));
       if (!blob) return null;
       return new File([blob], `smartshot-${Date.now()}.jpg`, { type: 'image/jpeg', lastModified: Date.now() });
