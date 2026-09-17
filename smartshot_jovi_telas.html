@@ -761,5 +761,246 @@
   </div>
 </div>
 
+<script>
+(() => {
+  const screens = [...document.querySelectorAll('.screen')];
+  if (screens.length < 6) return;
+
+  const state = {
+    smartshotAtivo: false,
+    modo: 'Selfie',
+    qualidade: 'Alta',
+    galeriasSelecionadas: new Set(),
+    plataforma: 'WhatsApp'
+  };
+
+  const modoConfig = {
+    Selfie: {
+      qualidade: 'Alta',
+      feedback: ['Boa iluminação detectada', 'Afaste levemente o celular', 'Ângulo ideal encontrado']
+    },
+    Noturna: {
+      qualidade: 'Média',
+      feedback: ['Iluminação baixa detectada', 'Apoie o celular para reduzir tremor', 'Ative o modo noturno para nitidez']
+    },
+    Produto: {
+      qualidade: 'Alta',
+      feedback: ['Plano principal detectado', 'Aproxime 10cm para mais detalhe', 'Fundo limpo melhora conversão']
+    },
+    Comida: {
+      qualidade: 'Alta',
+      feedback: ['Cores vivas detectadas', 'Ajuste ângulo para 45°', 'Evite sombra sobre o prato']
+    },
+    Grupo: {
+      qualidade: 'Média',
+      feedback: ['Vários rostos detectados', 'Recuar melhora enquadramento', 'Ative grade para alinhar todos']
+    },
+    Retrato: {
+      qualidade: 'Alta',
+      feedback: ['Rosto em foco', 'Afaste o fundo para mais profundidade', 'Luz lateral suave recomendada']
+    }
+  };
+
+  const prototypeStyle = document.createElement('style');
+  prototypeStyle.textContent = `
+    .mode-cell, .quick-btn, .gal-cell, .social-cell, .action-cell, .smartshot-cta, .shutter, .save-cta { cursor: pointer; }
+    .social-cell.is-active, .action-cell.is-active, .quick-btn.is-active { outline: 2px solid #1f6bff; outline-offset: 1px; border-radius: 12px; }
+    .gal-cell.is-hidden { display: none; }
+  `;
+  document.head.appendChild(prototypeStyle);
+
+  const screen1 = screens[0];
+  const screen2 = screens[1];
+  const screen3 = screens[2];
+  const screen4 = screens[3];
+  const screen5 = screens[4];
+  const screen6 = screens[5];
+
+  const smartshotCta = screen1.querySelector('.smartshot-cta');
+  const modeCells = [...screen2.querySelectorAll('.mode-cell')];
+  const applyModeButton = screen2.querySelector('.apply-btn');
+  const modeGuideLabel = screen3.querySelector('.mode-pill');
+  const qualityTag = screen3.querySelector('.quality-tag b');
+  const feedbackRows = [...screen3.querySelectorAll('.feedback-card .fb-row')];
+  const previewModeLabel = screen4.querySelectorAll('.info-line b')[1];
+  const previewQualityLabel = screen4.querySelectorAll('.info-line b')[0];
+  const quickButtons = [...screen4.querySelectorAll('.quick-btn')];
+  const saveToGallery = screen4.querySelector('.save-cta');
+  const galleryCells = [...screen5.querySelectorAll('.gal-cell')];
+  const galleryMeta = screen5.querySelector('.gal-meta span');
+  const galleryExpires = screen5.querySelector('.gal-meta .expires');
+  const galleryButtons = screen5.querySelectorAll('.gal-bottom button');
+  const shareSocialCells = [...screen6.querySelectorAll('.social-cell')];
+  const shareActionCells = [...screen6.querySelectorAll('.action-cell')];
+  const shareStatus = screen6.querySelector('.status-row b');
+
+  function updateGuideByMode() {
+    const config = modoConfig[state.modo] || modoConfig.Selfie;
+    state.qualidade = config.qualidade;
+    if (modeGuideLabel) modeGuideLabel.innerHTML = `<small>Modo ativo</small>${state.modo}`;
+    if (qualityTag) qualityTag.textContent = state.qualidade;
+    if (previewModeLabel) previewModeLabel.textContent = state.modo;
+    if (previewQualityLabel) previewQualityLabel.textContent = state.qualidade;
+
+    feedbackRows.forEach((row, index) => {
+      if (!config.feedback[index]) return;
+      row.innerHTML = `${index === 1 ? '<span class="fb-icon warn">!</span>' : '<span class="fb-icon ok">✓</span>'}${config.feedback[index]}`;
+    });
+  }
+
+  function updateGalleryMeta() {
+    const visiveis = galleryCells.filter(cell => !cell.classList.contains('is-hidden')).length;
+    const selecionadas = galleryCells.filter(cell => cell.classList.contains('selected') && !cell.classList.contains('is-hidden')).length;
+    if (galleryMeta) galleryMeta.textContent = `Últimas 24h · ${visiveis} capturas · ${selecionadas} selecionadas`;
+  }
+
+  function setShareStatus(text) {
+    if (shareStatus) shareStatus.textContent = text;
+  }
+
+  if (smartshotCta) {
+    smartshotCta.addEventListener('click', () => {
+      state.smartshotAtivo = !state.smartshotAtivo;
+      smartshotCta.innerHTML = state.smartshotAtivo
+        ? '✦ SmartShot IA ativado <span style="margin-left:auto">✓</span>'
+        : '✦ Ativar SmartShot IA <span style="margin-left:auto">→</span>';
+      smartshotCta.style.opacity = state.smartshotAtivo ? '1' : '.9';
+      smartshotCta.style.filter = state.smartshotAtivo ? 'saturate(1.1)' : 'none';
+    });
+  }
+
+  modeCells.forEach(cell => {
+    cell.addEventListener('click', () => {
+      modeCells.forEach(item => item.classList.remove('active'));
+      cell.classList.add('active');
+      const modeName = cell.textContent.trim().split('\n').pop().trim();
+      state.modo = modeName;
+      if (applyModeButton) applyModeButton.textContent = `Aplicar modo ${modeName}`;
+    });
+  });
+
+  if (applyModeButton) {
+    applyModeButton.addEventListener('click', () => {
+      updateGuideByMode();
+      screen3.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  }
+
+  screen3.querySelectorAll('.shutter').forEach(shutter => {
+    shutter.addEventListener('click', () => {
+      updateGuideByMode();
+      const qualidade = ['Alta', 'Alta', 'Média'][Math.floor(Math.random() * 3)];
+      state.qualidade = qualidade;
+      if (qualityTag) qualityTag.textContent = qualidade;
+      if (previewQualityLabel) previewQualityLabel.textContent = qualidade;
+      screen4.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  });
+
+  quickButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      quickButtons.forEach(item => item.classList.remove('is-active'));
+      button.classList.add('is-active');
+      const acao = button.textContent.replace(/\s+/g, ' ').trim();
+      if (/Compartilhar/i.test(acao)) {
+        setShareStatus('pronto para compartilhar');
+      } else if (/Editar IA/i.test(acao)) {
+        setShareStatus('edição inteligente aplicada');
+      } else if (/Salvar/i.test(acao)) {
+        setShareStatus('salvo no dispositivo');
+      } else if (/Daily Gallery/i.test(acao)) {
+        setShareStatus('enviado para Daily Gallery');
+      }
+    });
+  });
+
+  if (saveToGallery) {
+    saveToGallery.addEventListener('click', () => {
+      const firstVisible = galleryCells.find(cell => !cell.classList.contains('is-hidden'));
+      if (firstVisible) firstVisible.classList.add('selected');
+      updateGalleryMeta();
+      screen5.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  }
+
+  galleryCells.forEach((cell, index) => {
+    if (cell.classList.contains('selected')) state.galeriasSelecionadas.add(index);
+    cell.addEventListener('click', () => {
+      cell.classList.toggle('selected');
+      if (cell.classList.contains('selected')) state.galeriasSelecionadas.add(index);
+      else state.galeriasSelecionadas.delete(index);
+      updateGalleryMeta();
+    });
+  });
+
+  if (galleryButtons[0]) {
+    galleryButtons[0].addEventListener('click', () => {
+      setShareStatus('selecionados salvos para compartilhar');
+    });
+  }
+
+  if (galleryButtons[1]) {
+    galleryButtons[1].addEventListener('click', () => {
+      galleryCells.forEach(cell => {
+        if (!cell.classList.contains('is-hidden')) cell.classList.add('selected');
+      });
+      updateGalleryMeta();
+      setShareStatus('todas as capturas foram salvas');
+    });
+  }
+
+  if (galleryButtons[2]) {
+    galleryButtons[2].addEventListener('click', () => {
+      galleryCells.forEach(cell => {
+        if (!cell.classList.contains('selected')) cell.classList.add('is-hidden');
+      });
+      updateGalleryMeta();
+      setShareStatus('não selecionadas removidas da galeria diária');
+    });
+  }
+
+  shareSocialCells.forEach(cell => {
+    cell.addEventListener('click', () => {
+      shareSocialCells.forEach(item => item.classList.remove('is-active'));
+      cell.classList.add('is-active');
+      state.plataforma = cell.textContent.trim();
+      setShareStatus(`pronto para compartilhar via ${state.plataforma}`);
+    });
+  });
+
+  shareActionCells.forEach(cell => {
+    cell.addEventListener('click', async () => {
+      shareActionCells.forEach(item => item.classList.remove('is-active'));
+      cell.classList.add('is-active');
+      const actionName = cell.querySelector('b')?.textContent?.trim() || '';
+      if (actionName === 'Copiar link') {
+        const demoLink = `https://smartshot.jovi.app/share?mode=${encodeURIComponent(state.modo.toLowerCase())}`;
+        try {
+          await navigator.clipboard.writeText(demoLink);
+          setShareStatus(`link copiado (${state.plataforma})`);
+        } catch (_) {
+          setShareStatus('link pronto para cópia manual');
+        }
+      } else if (actionName === 'Enviar agora') {
+        setShareStatus(`enviado via ${state.plataforma}`);
+      }
+    });
+  });
+
+  let remainingMinutes = 18 * 60 + 43;
+  const timer = setInterval(() => {
+    remainingMinutes = Math.max(0, remainingMinutes - 1);
+    const h = Math.floor(remainingMinutes / 60);
+    const m = remainingMinutes % 60;
+    if (galleryExpires) galleryExpires.textContent = `Expira em ${h}h ${String(m).padStart(2, '0')}min`;
+    if (remainingMinutes === 0) clearInterval(timer);
+  }, 60000);
+
+  updateGuideByMode();
+  updateGalleryMeta();
+  setShareStatus('pronto para compartilhar');
+})();
+</script>
+
 </body>
 </html>
