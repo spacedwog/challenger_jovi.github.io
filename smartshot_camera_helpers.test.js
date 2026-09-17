@@ -3,8 +3,22 @@ const assert = require('node:assert/strict');
 const {
   resolveCameraFailure,
   computeResumeIntent,
-  shouldRestartCamera
+  shouldRestartCamera,
+  bindCameraControls
 } = require('./smartshot_camera_helpers.js');
+
+function createMockButton() {
+  const listeners = {};
+  return {
+    addEventListener(type, handler) {
+      listeners[type] = listeners[type] || [];
+      listeners[type].push(handler);
+    },
+    click() {
+      (listeners.click || []).forEach((handler) => handler());
+    }
+  };
+}
 
 test('computeResumeIntent only resumes when SmartShot is active and a stream exists', () => {
   assert.equal(computeResumeIntent(true, true), true);
@@ -36,4 +50,18 @@ test('resolveCameraFailure returns specific guidance for denied, insecure, and u
     detail: 'Nenhum dispositivo compatível foi encontrado',
     message: 'Não encontrei uma câmera disponível neste dispositivo.'
   });
+});
+
+test('bindCameraControls wires shutter and flip handlers', () => {
+  const shutterA = createMockButton();
+  const shutterB = createMockButton();
+  const flipA = createMockButton();
+  let captures = 0;
+  let flips = 0;
+  bindCameraControls([shutterA, shutterB], [flipA], () => { captures += 1; }, () => { flips += 1; });
+  shutterA.click();
+  shutterB.click();
+  flipA.click();
+  assert.equal(captures, 2);
+  assert.equal(flips, 1);
 });

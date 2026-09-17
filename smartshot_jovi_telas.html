@@ -815,7 +815,26 @@
 (() => {
   const screens = [...document.querySelectorAll('.screen')];
   if (screens.length < 6) return;
-  const cameraHelpers = window.smartShotCameraHelpers;
+  const cameraHelpers = window.smartShotCameraHelpers || {
+    resolveCameraFailure(error, isSecureContext) {
+      const denied = error?.name === 'NotAllowedError' || error?.name === 'SecurityError';
+      const unavailable = error?.name === 'NotFoundError' || error?.name === 'DevicesNotFoundError' || error?.name === 'OverconstrainedError';
+      if (denied) return { title: 'CÂMERA BLOQUEADA', detail: 'Permita acesso ou use o upload manual', message: 'Permita o acesso à câmera para continuar.' };
+      if (!isSecureContext) return { title: 'CONTEXTO INSEGURO', detail: 'Abra a página em HTTPS ou localhost', message: 'Abra a página em HTTPS ou localhost para usar a câmera.' };
+      if (unavailable) return { title: 'CÂMERA INDISPONÍVEL', detail: 'Nenhum dispositivo compatível foi encontrado', message: 'Não encontrei uma câmera disponível neste dispositivo.' };
+      return { title: 'CÂMERA INDISPONÍVEL', detail: 'Tente novamente ou use o upload manual', message: 'Não foi possível iniciar a câmera neste dispositivo.' };
+    },
+    computeResumeIntent(smartshotAtivo, hasCameraStream) {
+      return Boolean(smartshotAtivo && hasCameraStream);
+    },
+    shouldRestartCamera(visibilityState, shouldResumeCamera, smartshotAtivo, hasCameraStream) {
+      return visibilityState === 'visible' && Boolean(shouldResumeCamera && smartshotAtivo && !hasCameraStream);
+    },
+    bindCameraControls(shutterButtons, flipButtons, onCapture, onFlip) {
+      shutterButtons.forEach((button) => button.addEventListener('click', onCapture));
+      flipButtons.forEach((button) => button.addEventListener('click', onFlip));
+    }
+  };
 
   class SmartShotAIAgent {
     constructor(screensRef) {
@@ -1078,7 +1097,6 @@
       const nextFacingMode = previousFacingMode === 'user' ? 'environment' : 'user';
       const { stream } = await this.requestCameraStream(nextFacingMode);
       if (!stream) return false;
-      this.state.cameraFacingMode = nextFacingMode;
       try {
         return await this.activateCameraStream(stream, nextFacingMode);
       } catch (_) {
@@ -1106,13 +1124,7 @@
         this.updateUploadStatus('O navegador não conseguiu preparar a área de captura da foto.', 'error');
         return null;
       }
-      context.save();
-      if (this.state.cameraFacingMode === 'user') {
-        context.translate(this.captureCanvas.width, 0);
-        context.scale(-1, 1);
-      }
       context.drawImage(video, 0, 0, this.captureCanvas.width, this.captureCanvas.height);
-      context.restore();
       const blob = await new Promise(resolve => this.captureCanvas.toBlob(resolve, 'image/jpeg', 0.92));
       if (!blob) {
         this.updateUploadStatus('A captura foi cancelada antes de gerar a imagem.', 'error');
@@ -1532,8 +1544,7 @@
       this.smartshotCta?.addEventListener('click', () => this.toggleSmartShot());
       this.modeCells.forEach(cell => cell.addEventListener('click', () => this.setMode(cell.textContent.trim().split('\n').pop().trim())));
       this.applyModeButton?.addEventListener('click', () => this.applyMode());
-      this.shutterButtons.forEach(shutter => shutter.addEventListener('click', () => void this.captureShot()));
-      this.flipButtons.forEach(button => button.addEventListener('click', () => void this.switchCamera()));
+      cameraHelpers.bindCameraControls(this.shutterButtons, this.flipButtons, () => void this.captureShot(), () => void this.switchCamera());
       this.quickButtons.forEach(button => button.addEventListener('click', () => void this.runQuickAction(button.textContent)));
       this.saveToGallery?.addEventListener('click', () => void this.sendToGallery());
       this.galleryCells.forEach(cell => cell.addEventListener('click', () => this.toggleGalleryCell(cell)));

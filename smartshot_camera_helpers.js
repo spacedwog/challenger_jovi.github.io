@@ -38,10 +38,16 @@
     return visibilityState === 'visible' && Boolean(shouldResumeCamera && smartshotAtivo && !hasCameraStream);
   }
 
+  function bindCameraControls(shutterButtons, flipButtons, onCapture, onFlip) {
+    shutterButtons.forEach((button) => button.addEventListener('click', onCapture));
+    flipButtons.forEach((button) => button.addEventListener('click', onFlip));
+  }
+
   const api = {
     resolveCameraFailure,
     computeResumeIntent,
-    shouldRestartCamera
+    shouldRestartCamera,
+    bindCameraControls
   };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
