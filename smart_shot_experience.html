@@ -1264,6 +1264,7 @@
               Seu navegador não suporta canvas.
             </canvas>
             <p id="shotCanvasHelp" class="sr-only">Use as setas do teclado para mover o foco da cena no canvas.</p>
+            <p id="shotCanvasStatus" class="sr-only" aria-live="polite"></p>
           </div>
         </div>
       </section>
@@ -2836,6 +2837,7 @@
   (() => {
     const canvas = document.getElementById('shotExperienceCanvas');
     const shotSection = document.getElementById('shot-experience');
+    const status = document.getElementById('shotCanvasStatus');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     const chips = document.querySelectorAll('.shot-chip');
@@ -2855,7 +2857,16 @@
     let isAnimating = false;
     let isSectionVisible = true;
     let isPageVisible = document.visibilityState === 'visible';
+    let usesVisibilityObserver = false;
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function updateStatus() {
+      if (!status) return;
+      const scene = scenes[sceneIndex];
+      const x = Math.round(mx * 100);
+      const y = Math.round(my * 100);
+      status.textContent = `${scene.label}. Foco em ${x}% horizontal e ${y}% vertical.`;
+    }
 
     function resize() {
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -2966,6 +2977,7 @@
           node.classList.toggle('is-active', active);
           node.setAttribute('aria-pressed', String(active));
         });
+        updateStatus();
         if (prefersReducedMotion || !isAnimating) drawFrame();
       });
     });
@@ -2990,8 +3002,11 @@
       event.preventDefault();
       mx = Math.min(1, Math.max(0, mx));
       my = Math.min(1, Math.max(0, my));
+      updateStatus();
       if (prefersReducedMotion || !isAnimating) drawFrame();
     });
+
+    canvas.addEventListener('focus', updateStatus);
 
     const handleResize = () => {
       window.clearTimeout(resizeTimer);
@@ -2999,6 +3014,7 @@
     };
 
     if (!prefersReducedMotion && shotSection && 'IntersectionObserver' in window) {
+      usesVisibilityObserver = true;
       const observer = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
           isSectionVisible = entry.isIntersecting;
@@ -3021,11 +3037,12 @@
     });
 
     resize();
+    updateStatus();
     window.addEventListener('resize', handleResize);
     if (prefersReducedMotion) drawFrame();
     else {
       drawFrame();
-      startRenderLoop();
+      if (!usesVisibilityObserver) startRenderLoop();
     }
     window.addEventListener('beforeunload', () => {
       window.clearTimeout(resizeTimer);
