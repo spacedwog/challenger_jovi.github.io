@@ -1264,7 +1264,7 @@
               Seu navegador não suporta canvas.
             </canvas>
             <p id="shotCanvasHelp" class="sr-only">Use as setas do teclado para mover o foco da cena no canvas.</p>
-            <p id="shotCanvasStatus" class="sr-only" aria-live="polite"></p>
+            <p id="shotCanvasStatus" class="shot-status-text" aria-live="polite"></p>
           </div>
         </div>
       </section>
@@ -2004,6 +2004,12 @@
     border-color: rgba(168,255,47,.72);
     background: rgba(168,255,47,.16);
     color: #C8FF5A;
+  }
+
+  .shot-status-text {
+    margin: 10px 6px 2px;
+    color: #A9C7FF;
+    font-size: 13px;
   }
 
   #shotExperienceCanvas {
@@ -2867,6 +2873,16 @@
     let sectionObserver = null;
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+    function hexToRgba(hex, alpha) {
+      const raw = hex.replace('#', '');
+      const safe = raw.length === 3 ? raw.split('').map((c) => c + c).join('') : raw;
+      const value = Number.parseInt(safe, 16);
+      const r = (value >> 16) & 255;
+      const g = (value >> 8) & 255;
+      const b = value & 255;
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+
     function updateStatus() {
       if (!status) return;
       const scene = scenes[sceneIndex];
@@ -2920,8 +2936,8 @@
       const glowX = w * (0.2 + mx * 0.6);
       const glowY = h * (0.25 + my * 0.25);
       const glow = ctx.createRadialGradient(glowX, glowY, 10, glowX, glowY, 220);
-      glow.addColorStop(0, `${scene.glow}AA`);
-      glow.addColorStop(1, `${scene.glow}00`);
+      glow.addColorStop(0, hexToRgba(scene.glow, 0.67));
+      glow.addColorStop(1, hexToRgba(scene.glow, 0));
       ctx.fillStyle = glow;
       ctx.fillRect(0, 0, w, h);
 
@@ -2955,7 +2971,8 @@
 
       ctx.fillStyle = '#FFFFFF';
       ctx.font = '600 14px Inter, Arial, sans-serif';
-      ctx.fillText(scene.label, 20, 30);
+      ctx.textBaseline = 'top';
+      ctx.fillText(scene.label, 20, 18);
     }
 
     function render() {
@@ -2993,6 +3010,7 @@
       const rect = canvas.getBoundingClientRect();
       mx = Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width));
       my = Math.min(1, Math.max(0, (event.clientY - rect.top) / rect.height));
+      updateStatus();
       if (prefersReducedMotion || !isAnimating) drawFrame();
     });
 
