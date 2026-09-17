@@ -1022,13 +1022,22 @@
 
     async capturePhotoFile() {
       const ready = await this.ensureCameraReady({ allowFilePicker: true });
-      if (!ready) return null;
+      if (!ready) {
+        this.updateUploadStatus('Não consegui iniciar a câmera. Use o seletor de arquivo para continuar.', 'error');
+        return null;
+      }
       const video = this.cameraVideos.find(item => item?.videoWidth && item?.videoHeight);
-      if (!video) return null;
+      if (!video) {
+        this.updateUploadStatus('A câmera foi aberta, mas nenhum frame ficou disponível para captura.', 'error');
+        return null;
+      }
       this.captureCanvas.width = video.videoWidth;
       this.captureCanvas.height = video.videoHeight;
       const context = this.captureCanvas.getContext('2d');
-      if (!context) return null;
+      if (!context) {
+        this.updateUploadStatus('O navegador não conseguiu preparar a área de captura da foto.', 'error');
+        return null;
+      }
       context.save();
       if (this.state.cameraFacingMode === 'user') {
         context.translate(this.captureCanvas.width, 0);
@@ -1037,7 +1046,10 @@
       context.drawImage(video, 0, 0, this.captureCanvas.width, this.captureCanvas.height);
       context.restore();
       const blob = await new Promise(resolve => this.captureCanvas.toBlob(resolve, 'image/jpeg', 0.92));
-      if (!blob) return null;
+      if (!blob) {
+        this.updateUploadStatus('A captura foi cancelada antes de gerar a imagem.', 'error');
+        return null;
+      }
       const timestamp = Date.now();
       return {
         blob,
@@ -1065,7 +1077,12 @@
     }
 
     bindLifecycle() {
-      window.addEventListener('beforeunload', () => this.stopCameraStream(), { once: true });
+      const cleanup = () => this.stopCameraStream();
+      window.addEventListener('beforeunload', cleanup, { once: true });
+      window.addEventListener('pagehide', cleanup, { once: true });
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') this.stopCameraStream();
+      });
     }
 
     updateGuideByMode() {
