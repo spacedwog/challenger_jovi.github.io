@@ -766,239 +766,309 @@
   const screens = [...document.querySelectorAll('.screen')];
   if (screens.length < 6) return;
 
-  const state = {
-    smartshotAtivo: false,
-    modo: 'Selfie',
-    qualidade: 'Alta',
-    galeriasSelecionadas: new Set(),
-    plataforma: 'WhatsApp'
-  };
-
-  const modoConfig = {
-    Selfie: {
-      qualidade: 'Alta',
-      feedback: ['Boa iluminação detectada', 'Afaste levemente o celular', 'Ângulo ideal encontrado']
-    },
-    Noturna: {
-      qualidade: 'Média',
-      feedback: ['Iluminação baixa detectada', 'Apoie o celular para reduzir tremor', 'Ative o modo noturno para nitidez']
-    },
-    Produto: {
-      qualidade: 'Alta',
-      feedback: ['Plano principal detectado', 'Aproxime 10cm para mais detalhe', 'Fundo limpo melhora conversão']
-    },
-    Comida: {
-      qualidade: 'Alta',
-      feedback: ['Cores vivas detectadas', 'Ajuste ângulo para 45°', 'Evite sombra sobre o prato']
-    },
-    Grupo: {
-      qualidade: 'Média',
-      feedback: ['Vários rostos detectados', 'Recuar melhora enquadramento', 'Ative grade para alinhar todos']
-    },
-    Retrato: {
-      qualidade: 'Alta',
-      feedback: ['Rosto em foco', 'Afaste o fundo para mais profundidade', 'Luz lateral suave recomendada']
+  class SmartShotAIAgent {
+    constructor(screensRef) {
+      this.screens = screensRef;
+      this.state = {
+        smartshotAtivo: false,
+        modo: 'Selfie',
+        qualidade: 'Alta',
+        plataforma: 'WhatsApp'
+      };
+      this.modoConfig = {
+        Selfie: { qualidade: 'Alta', feedback: ['Boa iluminação detectada', 'Afaste levemente o celular', 'Ângulo ideal encontrado'] },
+        Noturna: { qualidade: 'Média', feedback: ['Iluminação baixa detectada', 'Apoie o celular para reduzir tremor', 'Ative o modo noturno para nitidez'] },
+        Produto: { qualidade: 'Alta', feedback: ['Plano principal detectado', 'Aproxime 10cm para mais detalhe', 'Fundo limpo melhora conversão'] },
+        Comida: { qualidade: 'Alta', feedback: ['Cores vivas detectadas', 'Ajuste ângulo para 45°', 'Evite sombra sobre o prato'] },
+        Grupo: { qualidade: 'Média', feedback: ['Vários rostos detectados', 'Recuar melhora enquadramento', 'Ative grade para alinhar todos'] },
+        Retrato: { qualidade: 'Alta', feedback: ['Rosto em foco', 'Afaste o fundo para mais profundidade', 'Luz lateral suave recomendada'] }
+      };
+      this.injectStyles();
+      this.mapElements();
+      this.bindAllActions();
+      this.mountAgentPanel();
+      this.startGalleryTimer();
+      this.updateGuideByMode();
+      this.updateGalleryMeta();
+      this.setShareStatus('pronto para compartilhar');
     }
-  };
 
-  const prototypeStyle = document.createElement('style');
-  prototypeStyle.textContent = `
-    .mode-cell, .quick-btn, .gal-cell, .social-cell, .action-cell, .smartshot-cta, .shutter, .save-cta { cursor: pointer; }
-    .social-cell.is-active, .action-cell.is-active, .quick-btn.is-active { outline: 2px solid #1f6bff; outline-offset: 1px; border-radius: 12px; }
-    .gal-cell.is-hidden { display: none; }
-  `;
-  document.head.appendChild(prototypeStyle);
+    injectStyles() {
+      const style = document.createElement('style');
+      style.textContent = `
+        .mode-cell, .quick-btn, .gal-cell, .social-cell, .action-cell, .smartshot-cta, .shutter, .save-cta { cursor: pointer; }
+        .social-cell.is-active, .action-cell.is-active, .quick-btn.is-active { outline: 2px solid #1f6bff; outline-offset: 1px; border-radius: 12px; }
+        .gal-cell.is-hidden { display: none; }
+        .ai-agent-wrap { max-width: 1400px; margin: 24px auto 0; padding: 16px; border: 1px solid var(--line); border-radius: 14px; background: rgba(12,29,64,.5); }
+        .ai-agent-title { font-weight: 700; margin: 0 0 10px; }
+        .ai-agent-row { display: flex; gap: 8px; flex-wrap: wrap; }
+        .ai-agent-input { flex: 1; min-width: 240px; border: 1px solid var(--line); border-radius: 10px; padding: 10px; background: #081530; color: #eaf1ff; }
+        .ai-agent-btn { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; background: #1f6bff; color: #fff; font-weight: 700; }
+        .ai-agent-log { margin: 10px 0 0; padding: 0; list-style: none; max-height: 160px; overflow: auto; display: grid; gap: 6px; }
+        .ai-agent-log li { padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: rgba(0,0,0,.2); font-size: 12px; }
+      `;
+      document.head.appendChild(style);
+    }
 
-  const screen1 = screens[0];
-  const screen2 = screens[1];
-  const screen3 = screens[2];
-  const screen4 = screens[3];
-  const screen5 = screens[4];
-  const screen6 = screens[5];
+    mapElements() {
+      const [screen1, screen2, screen3, screen4, screen5, screen6] = this.screens;
+      this.screen3 = screen3;
+      this.screen4 = screen4;
+      this.screen5 = screen5;
+      this.smartshotCta = screen1.querySelector('.smartshot-cta');
+      this.modeCells = [...screen2.querySelectorAll('.mode-cell')];
+      this.applyModeButton = screen2.querySelector('.apply-btn');
+      this.modeGuideLabel = screen3.querySelector('.mode-pill');
+      this.qualityTag = screen3.querySelector('.quality-tag b');
+      this.feedbackRows = [...screen3.querySelectorAll('.feedback-card .fb-row')];
+      this.previewModeLabel = screen4.querySelectorAll('.info-line b')[1];
+      this.previewQualityLabel = screen4.querySelectorAll('.info-line b')[0];
+      this.quickButtons = [...screen4.querySelectorAll('.quick-btn')];
+      this.saveToGallery = screen4.querySelector('.save-cta');
+      this.galleryCells = [...screen5.querySelectorAll('.gal-cell')];
+      this.galleryMeta = screen5.querySelector('.gal-meta span');
+      this.galleryExpires = screen5.querySelector('.gal-meta .expires');
+      this.galleryButtons = screen5.querySelectorAll('.gal-bottom button');
+      this.shareSocialCells = [...screen6.querySelectorAll('.social-cell')];
+      this.shareActionCells = [...screen6.querySelectorAll('.action-cell')];
+      this.shareStatus = screen6.querySelector('.status-row b');
+    }
 
-  const smartshotCta = screen1.querySelector('.smartshot-cta');
-  const modeCells = [...screen2.querySelectorAll('.mode-cell')];
-  const applyModeButton = screen2.querySelector('.apply-btn');
-  const modeGuideLabel = screen3.querySelector('.mode-pill');
-  const qualityTag = screen3.querySelector('.quality-tag b');
-  const feedbackRows = [...screen3.querySelectorAll('.feedback-card .fb-row')];
-  const previewModeLabel = screen4.querySelectorAll('.info-line b')[1];
-  const previewQualityLabel = screen4.querySelectorAll('.info-line b')[0];
-  const quickButtons = [...screen4.querySelectorAll('.quick-btn')];
-  const saveToGallery = screen4.querySelector('.save-cta');
-  const galleryCells = [...screen5.querySelectorAll('.gal-cell')];
-  const galleryMeta = screen5.querySelector('.gal-meta span');
-  const galleryExpires = screen5.querySelector('.gal-meta .expires');
-  const galleryButtons = screen5.querySelectorAll('.gal-bottom button');
-  const shareSocialCells = [...screen6.querySelectorAll('.social-cell')];
-  const shareActionCells = [...screen6.querySelectorAll('.action-cell')];
-  const shareStatus = screen6.querySelector('.status-row b');
+    setShareStatus(text) {
+      if (this.shareStatus) this.shareStatus.textContent = text;
+    }
 
-  function updateGuideByMode() {
-    const config = modoConfig[state.modo] || modoConfig.Selfie;
-    state.qualidade = config.qualidade;
-    if (modeGuideLabel) modeGuideLabel.innerHTML = `<small>Modo ativo</small>${state.modo}`;
-    if (qualityTag) qualityTag.textContent = state.qualidade;
-    if (previewModeLabel) previewModeLabel.textContent = state.modo;
-    if (previewQualityLabel) previewQualityLabel.textContent = state.qualidade;
+    updateGuideByMode() {
+      const config = this.modoConfig[this.state.modo] || this.modoConfig.Selfie;
+      this.state.qualidade = config.qualidade;
+      if (this.modeGuideLabel) this.modeGuideLabel.innerHTML = `<small>Modo ativo</small>${this.state.modo}`;
+      if (this.qualityTag) this.qualityTag.textContent = this.state.qualidade;
+      if (this.previewModeLabel) this.previewModeLabel.textContent = this.state.modo;
+      if (this.previewQualityLabel) this.previewQualityLabel.textContent = this.state.qualidade;
+      this.feedbackRows.forEach((row, index) => {
+        if (!config.feedback[index]) return;
+        row.innerHTML = `${index === 1 ? '<span class="fb-icon warn">!</span>' : '<span class="fb-icon ok">✓</span>'}${config.feedback[index]}`;
+      });
+    }
 
-    feedbackRows.forEach((row, index) => {
-      if (!config.feedback[index]) return;
-      row.innerHTML = `${index === 1 ? '<span class="fb-icon warn">!</span>' : '<span class="fb-icon ok">✓</span>'}${config.feedback[index]}`;
-    });
-  }
+    updateGalleryMeta() {
+      const visiveis = this.galleryCells.filter(cell => !cell.classList.contains('is-hidden')).length;
+      const selecionadas = this.galleryCells.filter(cell => cell.classList.contains('selected') && !cell.classList.contains('is-hidden')).length;
+      if (this.galleryMeta) this.galleryMeta.textContent = `Últimas 24h · ${visiveis} capturas · ${selecionadas} selecionadas`;
+    }
 
-  function updateGalleryMeta() {
-    const visiveis = galleryCells.filter(cell => !cell.classList.contains('is-hidden')).length;
-    const selecionadas = galleryCells.filter(cell => cell.classList.contains('selected') && !cell.classList.contains('is-hidden')).length;
-    if (galleryMeta) galleryMeta.textContent = `Últimas 24h · ${visiveis} capturas · ${selecionadas} selecionadas`;
-  }
-
-  function setShareStatus(text) {
-    if (shareStatus) shareStatus.textContent = text;
-  }
-
-  if (smartshotCta) {
-    smartshotCta.addEventListener('click', () => {
-      state.smartshotAtivo = !state.smartshotAtivo;
-      smartshotCta.innerHTML = state.smartshotAtivo
+    toggleSmartShot(force) {
+      this.state.smartshotAtivo = typeof force === 'boolean' ? force : !this.state.smartshotAtivo;
+      if (!this.smartshotCta) return;
+      this.smartshotCta.innerHTML = this.state.smartshotAtivo
         ? '✦ SmartShot IA ativado <span style="margin-left:auto">✓</span>'
         : '✦ Ativar SmartShot IA <span style="margin-left:auto">→</span>';
-      smartshotCta.style.opacity = state.smartshotAtivo ? '1' : '.9';
-      smartshotCta.style.filter = state.smartshotAtivo ? 'saturate(1.1)' : 'none';
-    });
-  }
+      this.smartshotCta.style.opacity = this.state.smartshotAtivo ? '1' : '.9';
+      this.smartshotCta.style.filter = this.state.smartshotAtivo ? 'saturate(1.1)' : 'none';
+    }
 
-  modeCells.forEach(cell => {
-    cell.addEventListener('click', () => {
-      modeCells.forEach(item => item.classList.remove('active'));
-      cell.classList.add('active');
-      const modeName = cell.textContent.trim().split('\n').pop().trim();
-      state.modo = modeName;
-      if (applyModeButton) applyModeButton.textContent = `Aplicar modo ${modeName}`;
-    });
-  });
+    setMode(modeName) {
+      const match = this.modeCells.find(cell => cell.textContent.replace(/\s+/g, ' ').includes(modeName));
+      if (!match) return false;
+      this.modeCells.forEach(item => item.classList.remove('active'));
+      match.classList.add('active');
+      this.state.modo = modeName;
+      if (this.applyModeButton) this.applyModeButton.textContent = `Aplicar modo ${modeName}`;
+      return true;
+    }
 
-  if (applyModeButton) {
-    applyModeButton.addEventListener('click', () => {
-      updateGuideByMode();
-      screen3.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    });
-  }
+    applyMode(scroll = true) {
+      this.updateGuideByMode();
+      if (scroll) this.screen3.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
 
-  screen3.querySelectorAll('.shutter').forEach(shutter => {
-    shutter.addEventListener('click', () => {
-      updateGuideByMode();
+    captureShot() {
+      this.updateGuideByMode();
       const qualidade = ['Alta', 'Alta', 'Média'][Math.floor(Math.random() * 3)];
-      state.qualidade = qualidade;
-      if (qualityTag) qualityTag.textContent = qualidade;
-      if (previewQualityLabel) previewQualityLabel.textContent = qualidade;
-      screen4.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    });
-  });
+      this.state.qualidade = qualidade;
+      if (this.qualityTag) this.qualityTag.textContent = qualidade;
+      if (this.previewQualityLabel) this.previewQualityLabel.textContent = qualidade;
+      this.screen4.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
 
-  quickButtons.forEach(button => {
-    button.addEventListener('click', () => {
-      quickButtons.forEach(item => item.classList.remove('is-active'));
-      button.classList.add('is-active');
-      const acao = button.textContent.replace(/\s+/g, ' ').trim();
-      if (/Compartilhar/i.test(acao)) {
-        setShareStatus('pronto para compartilhar');
-      } else if (/Editar IA/i.test(acao)) {
-        setShareStatus('edição inteligente aplicada');
-      } else if (/Salvar/i.test(acao)) {
-        setShareStatus('salvo no dispositivo');
-      } else if (/Daily Gallery/i.test(acao)) {
-        setShareStatus('enviado para Daily Gallery');
-      }
-    });
-  });
+    runQuickAction(acao) {
+      this.quickButtons.forEach(item => item.classList.remove('is-active'));
+      const target = this.quickButtons.find(button => button.textContent.replace(/\s+/g, ' ').toLowerCase().includes(acao.toLowerCase()));
+      if (!target) return;
+      target.classList.add('is-active');
+      const label = target.textContent.replace(/\s+/g, ' ').trim();
+      if (/Compartilhar/i.test(label)) this.setShareStatus('pronto para compartilhar');
+      else if (/Editar IA/i.test(label)) this.setShareStatus('edição inteligente aplicada');
+      else if (/Salvar/i.test(label)) this.setShareStatus('salvo no dispositivo');
+      else if (/Daily Gallery/i.test(label)) this.setShareStatus('enviado para Daily Gallery');
+    }
 
-  if (saveToGallery) {
-    saveToGallery.addEventListener('click', () => {
-      const firstVisible = galleryCells.find(cell => !cell.classList.contains('is-hidden'));
+    sendToGallery() {
+      const firstVisible = this.galleryCells.find(cell => !cell.classList.contains('is-hidden'));
       if (firstVisible) firstVisible.classList.add('selected');
-      updateGalleryMeta();
-      screen5.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    });
-  }
+      this.updateGalleryMeta();
+      this.screen5.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
 
-  galleryCells.forEach((cell, index) => {
-    if (cell.classList.contains('selected')) state.galeriasSelecionadas.add(index);
-    cell.addEventListener('click', () => {
+    toggleGalleryCell(cell) {
       cell.classList.toggle('selected');
-      if (cell.classList.contains('selected')) state.galeriasSelecionadas.add(index);
-      else state.galeriasSelecionadas.delete(index);
-      updateGalleryMeta();
-    });
-  });
+      this.updateGalleryMeta();
+    }
 
-  if (galleryButtons[0]) {
-    galleryButtons[0].addEventListener('click', () => {
-      setShareStatus('selecionados salvos para compartilhar');
-    });
-  }
+    saveSelectedGallery() {
+      this.setShareStatus('selecionados salvos para compartilhar');
+    }
 
-  if (galleryButtons[1]) {
-    galleryButtons[1].addEventListener('click', () => {
-      galleryCells.forEach(cell => {
-        if (!cell.classList.contains('is-hidden')) cell.classList.add('selected');
-      });
-      updateGalleryMeta();
-      setShareStatus('todas as capturas foram salvas');
-    });
-  }
+    saveAllGallery() {
+      this.galleryCells.forEach(cell => { if (!cell.classList.contains('is-hidden')) cell.classList.add('selected'); });
+      this.updateGalleryMeta();
+      this.setShareStatus('todas as capturas foram salvas');
+    }
 
-  if (galleryButtons[2]) {
-    galleryButtons[2].addEventListener('click', () => {
-      galleryCells.forEach(cell => {
-        if (!cell.classList.contains('selected')) cell.classList.add('is-hidden');
-      });
-      updateGalleryMeta();
-      setShareStatus('não selecionadas removidas da galeria diária');
-    });
-  }
+    removeUnselectedGallery() {
+      this.galleryCells.forEach(cell => { if (!cell.classList.contains('selected')) cell.classList.add('is-hidden'); });
+      this.updateGalleryMeta();
+      this.setShareStatus('não selecionadas removidas da galeria diária');
+    }
 
-  shareSocialCells.forEach(cell => {
-    cell.addEventListener('click', () => {
-      shareSocialCells.forEach(item => item.classList.remove('is-active'));
-      cell.classList.add('is-active');
-      state.plataforma = cell.textContent.trim();
-      setShareStatus(`pronto para compartilhar via ${state.plataforma}`);
-    });
-  });
+    selectPlatform(platformName) {
+      const match = this.shareSocialCells.find(cell => cell.textContent.trim().toLowerCase() === platformName.toLowerCase());
+      if (!match) return false;
+      this.shareSocialCells.forEach(item => item.classList.remove('is-active'));
+      match.classList.add('is-active');
+      this.state.plataforma = match.textContent.trim();
+      this.setShareStatus(`pronto para compartilhar via ${this.state.plataforma}`);
+      return true;
+    }
 
-  shareActionCells.forEach(cell => {
-    cell.addEventListener('click', async () => {
-      shareActionCells.forEach(item => item.classList.remove('is-active'));
-      cell.classList.add('is-active');
-      const actionName = cell.querySelector('b')?.textContent?.trim() || '';
+    async runShareAction(actionName) {
+      this.shareActionCells.forEach(item => item.classList.remove('is-active'));
+      const target = this.shareActionCells.find(cell => (cell.querySelector('b')?.textContent || '').trim() === actionName);
+      if (!target) return false;
+      target.classList.add('is-active');
       if (actionName === 'Copiar link') {
-        const demoLink = `https://smartshot.jovi.app/share?mode=${encodeURIComponent(state.modo.toLowerCase())}`;
+        const demoLink = `https://smartshot.jovi.app/share?mode=${encodeURIComponent(this.state.modo.toLowerCase())}`;
         try {
           await navigator.clipboard.writeText(demoLink);
-          setShareStatus(`link copiado (${state.plataforma})`);
+          this.setShareStatus(`link copiado (${this.state.plataforma})`);
         } catch (_) {
-          setShareStatus('link pronto para cópia manual');
+          this.setShareStatus('link pronto para cópia manual');
         }
       } else if (actionName === 'Enviar agora') {
-        setShareStatus(`enviado via ${state.plataforma}`);
+        this.setShareStatus(`enviado via ${this.state.plataforma}`);
       }
-    });
-  });
+      return true;
+    }
 
-  let remainingMinutes = 18 * 60 + 43;
-  const timer = setInterval(() => {
-    remainingMinutes = Math.max(0, remainingMinutes - 1);
-    const h = Math.floor(remainingMinutes / 60);
-    const m = remainingMinutes % 60;
-    if (galleryExpires) galleryExpires.textContent = `Expira em ${h}h ${String(m).padStart(2, '0')}min`;
-    if (remainingMinutes === 0) clearInterval(timer);
-  }, 60000);
+    async invoke(action, payload = {}) {
+      const handlers = {
+        toggleSmartShot: () => this.toggleSmartShot(payload.force),
+        setMode: () => this.setMode(payload.mode || 'Selfie'),
+        applyMode: () => this.applyMode(payload.scroll !== false),
+        captureShot: () => this.captureShot(),
+        runQuickAction: () => this.runQuickAction(payload.action || 'Compartilhar'),
+        sendToGallery: () => this.sendToGallery(),
+        saveSelectedGallery: () => this.saveSelectedGallery(),
+        saveAllGallery: () => this.saveAllGallery(),
+        removeUnselectedGallery: () => this.removeUnselectedGallery(),
+        selectPlatform: () => this.selectPlatform(payload.platform || 'WhatsApp'),
+        runShareAction: () => this.runShareAction(payload.action || 'Copiar link')
+      };
+      if (!handlers[action]) return false;
+      await handlers[action]();
+      return true;
+    }
 
-  updateGuideByMode();
-  updateGalleryMeta();
-  setShareStatus('pronto para compartilhar');
+    async processCommand(command) {
+      const text = command.trim().toLowerCase();
+      if (!text) return 'Digite um comando para eu agir.';
+      if (text.includes('ativar smartshot')) { this.toggleSmartShot(true); return 'SmartShot IA ativado.'; }
+      if (text.includes('desativar smartshot')) { this.toggleSmartShot(false); return 'SmartShot IA desativado.'; }
+      if (text.includes('capturar')) { this.captureShot(); return 'Captura simulada realizada.'; }
+      if (text.includes('aplicar modo')) { this.applyMode(); return `Modo ${this.state.modo} aplicado.`; }
+      if (text.includes('salvar tudo')) { this.saveAllGallery(); return 'Todas as capturas foram salvas.'; }
+      if (text.includes('remover não selecionadas')) { this.removeUnselectedGallery(); return 'Itens não selecionados removidos da galeria.'; }
+      if (text.includes('enviar agora')) { await this.runShareAction('Enviar agora'); return `Envio realizado via ${this.state.plataforma}.`; }
+      if (text.includes('copiar link')) { await this.runShareAction('Copiar link'); return `Link preparado para ${this.state.plataforma}.`; }
+      if (text.includes('whatsapp') || text.includes('instagram') || text.includes('tiktok') || text.includes('link')) {
+        const platform = text.includes('instagram') ? 'Instagram' : text.includes('tiktok') ? 'TikTok' : text.includes('link') ? 'Link' : 'WhatsApp';
+        this.selectPlatform(platform);
+        return `Plataforma ativa: ${platform}.`;
+      }
+      for (const mode of Object.keys(this.modoConfig)) {
+        if (text.includes(mode.toLowerCase())) {
+          this.setMode(mode);
+          return `Modo ${mode} selecionado. Diga "aplicar modo" para concluir.`;
+        }
+      }
+      return 'Comando não reconhecido. Exemplos: "ativar smartshot", "modo retrato", "capturar", "copiar link".';
+    }
+
+    bindAllActions() {
+      this.smartshotCta?.addEventListener('click', () => this.toggleSmartShot());
+      this.modeCells.forEach(cell => cell.addEventListener('click', () => this.setMode(cell.textContent.trim().split('\n').pop().trim())));
+      this.applyModeButton?.addEventListener('click', () => this.applyMode());
+      this.screen3.querySelectorAll('.shutter').forEach(shutter => shutter.addEventListener('click', () => this.captureShot()));
+      this.quickButtons.forEach(button => button.addEventListener('click', () => this.runQuickAction(button.textContent)));
+      this.saveToGallery?.addEventListener('click', () => this.sendToGallery());
+      this.galleryCells.forEach(cell => cell.addEventListener('click', () => this.toggleGalleryCell(cell)));
+      this.galleryButtons[0]?.addEventListener('click', () => this.saveSelectedGallery());
+      this.galleryButtons[1]?.addEventListener('click', () => this.saveAllGallery());
+      this.galleryButtons[2]?.addEventListener('click', () => this.removeUnselectedGallery());
+      this.shareSocialCells.forEach(cell => cell.addEventListener('click', () => this.selectPlatform(cell.textContent.trim())));
+      this.shareActionCells.forEach(cell => cell.addEventListener('click', () => this.runShareAction(cell.querySelector('b')?.textContent?.trim() || '')));
+    }
+
+    mountAgentPanel() {
+      const wrap = document.createElement('section');
+      wrap.className = 'ai-agent-wrap';
+      wrap.innerHTML = `
+        <p class="ai-agent-title">Agente IA JavaScript</p>
+        <div class="ai-agent-row">
+          <input class="ai-agent-input" type="text" placeholder="Ex: ativar smartshot, modo retrato, capturar, enviar agora" />
+          <button class="ai-agent-btn" type="button">Executar</button>
+        </div>
+        <ul class="ai-agent-log"></ul>
+      `;
+      document.body.insertBefore(wrap, document.querySelector('.footnote'));
+      this.agentInput = wrap.querySelector('.ai-agent-input');
+      this.agentButton = wrap.querySelector('.ai-agent-btn');
+      this.agentLog = wrap.querySelector('.ai-agent-log');
+      const runCommand = async () => {
+        if (!this.agentInput) return;
+        const prompt = this.agentInput.value.trim();
+        if (!prompt) return;
+        this.pushLog(`Você: ${prompt}`);
+        const reply = await this.processCommand(prompt);
+        this.pushLog(`Agente: ${reply}`);
+        this.agentInput.value = '';
+      };
+      this.agentButton?.addEventListener('click', runCommand);
+      this.agentInput?.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') runCommand();
+      });
+      this.pushLog('Agente: Pronto para comandar todas as funções JavaScript do protótipo.');
+    }
+
+    pushLog(text) {
+      if (!this.agentLog) return;
+      const item = document.createElement('li');
+      item.textContent = text;
+      this.agentLog.prepend(item);
+    }
+
+    startGalleryTimer() {
+      let remainingMinutes = 18 * 60 + 43;
+      setInterval(() => {
+        remainingMinutes = Math.max(0, remainingMinutes - 1);
+        const h = Math.floor(remainingMinutes / 60);
+        const m = remainingMinutes % 60;
+        if (this.galleryExpires) this.galleryExpires.textContent = `Expira em ${h}h ${String(m).padStart(2, '0')}min`;
+      }, 60000);
+    }
+  }
+
+  window.smartShotAIAgent = new SmartShotAIAgent(screens);
 })();
 </script>
 
