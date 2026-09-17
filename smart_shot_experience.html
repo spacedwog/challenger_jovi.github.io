@@ -1260,10 +1260,16 @@
               <button type="button" class="shot-chip" data-scene="1" aria-pressed="false">Retrato</button>
               <button type="button" class="shot-chip" data-scene="2" aria-pressed="false">Produto</button>
             </div>
-            <canvas id="shotExperienceCanvas" width="960" height="460" tabindex="0" aria-label="Pré-visualização animada da experiência SmartShot" aria-describedby="shotCanvasHelp">
+            <canvas id="shotExperienceCanvas" width="960" height="460" aria-label="Pré-visualização animada da experiência SmartShot" aria-describedby="shotCanvasHelp">
               Seu navegador não suporta canvas.
             </canvas>
-            <p id="shotCanvasHelp" class="sr-only">Use as setas do teclado para mover o foco da cena no canvas.</p>
+            <div class="shot-focus-controls" role="group" aria-label="Mover foco da pré-visualização">
+              <button type="button" class="shot-move" data-move="left" aria-label="Mover foco para a esquerda">←</button>
+              <button type="button" class="shot-move" data-move="up" aria-label="Mover foco para cima">↑</button>
+              <button type="button" class="shot-move" data-move="down" aria-label="Mover foco para baixo">↓</button>
+              <button type="button" class="shot-move" data-move="right" aria-label="Mover foco para a direita">→</button>
+            </div>
+            <p id="shotCanvasHelp" class="sr-only">Use os botões de direção para mover o foco da cena no canvas.</p>
             <p id="shotCanvasStatus" class="shot-status-text" aria-live="polite"></p>
           </div>
         </div>
@@ -2010,6 +2016,28 @@
     margin: 10px 6px 2px;
     color: #A9C7FF;
     font-size: 13px;
+  }
+
+  .shot-focus-controls {
+    display: flex;
+    gap: 8px;
+    margin: 10px 0 0 6px;
+  }
+
+  .shot-move {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,.24);
+    background: rgba(255,255,255,.06);
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  .shot-move:focus-visible {
+    outline: 2px solid #C8FF5A;
+    outline-offset: 2px;
   }
 
   #shotExperienceCanvas {
@@ -2853,6 +2881,7 @@
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     const chips = document.querySelectorAll('.shot-chip');
+    const moveControls = document.querySelectorAll('.shot-move');
     if (!ctx || !chips.length) return;
 
     const scenes = [
@@ -3025,24 +3054,23 @@
       canvasRect = canvas.getBoundingClientRect();
     });
 
-    canvas.addEventListener('keydown', (event) => {
+    function moveFocus(direction) {
       const step = 0.03;
-      let used = true;
-      if (event.key === 'ArrowLeft') mx -= step;
-      else if (event.key === 'ArrowRight') mx += step;
-      else if (event.key === 'ArrowUp') my -= step;
-      else if (event.key === 'ArrowDown') my += step;
-      else used = false;
-
-      if (!used) return;
-      event.preventDefault();
+      if (direction === 'left') mx -= step;
+      else if (direction === 'right') mx += step;
+      else if (direction === 'up') my -= step;
+      else if (direction === 'down') my += step;
       mx = Math.min(1, Math.max(0, mx));
       my = Math.min(1, Math.max(0, my));
       updateStatus();
       if (prefersReducedMotion || !isAnimating) drawFrame();
-    });
+    }
 
-    canvas.addEventListener('focus', updateStatus);
+    moveControls.forEach((button) => {
+      button.addEventListener('click', () => {
+        moveFocus(button.dataset.move);
+      });
+    });
 
     const handleResize = () => {
       window.clearTimeout(resizeTimer);
