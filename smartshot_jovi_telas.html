@@ -938,12 +938,18 @@
 
     async waitForVideoFrame(video) {
       if (!video) return;
-      if (video.readyState >= 2 && video.videoWidth && video.videoHeight) return;
-      await new Promise((resolve) => {
-        const onReady = () => {
+      if (video.readyState >= 2 && video.videoWidth && video.videoHeight) return true;
+      return await new Promise((resolve) => {
+        const timeoutId = window.setTimeout(() => {
           video.removeEventListener('loadedmetadata', onReady);
           video.removeEventListener('canplay', onReady);
-          resolve();
+          resolve(false);
+        }, 1500);
+        const onReady = () => {
+          window.clearTimeout(timeoutId);
+          video.removeEventListener('loadedmetadata', onReady);
+          video.removeEventListener('canplay', onReady);
+          resolve(true);
         };
         video.addEventListener('loadedmetadata', onReady, { once: true });
         video.addEventListener('canplay', onReady, { once: true });
@@ -982,8 +988,10 @@
             await Promise.all(this.cameraVideos.map(async (video) => {
               video.srcObject = stream;
               video.classList.toggle('is-front-camera', activeFacingMode === 'user');
-              await video.play().catch(() => undefined);
-              await this.waitForVideoFrame(video);
+              const played = await video.play().then(() => true).catch(() => false);
+              if (!played) throw new Error('Autoplay bloqueado');
+              const frameReady = await this.waitForVideoFrame(video);
+              if (!frameReady) throw new Error('Frame indisponível');
             }));
             this.updateCameraLabel('CÂMERA ONLINE', activeFacingMode === 'user' ? 'Prévia frontal ativa para desktop ou selfie' : activeFacingMode === 'environment' ? 'Prévia traseira ativa para captura mobile' : 'Prévia ativa para captura em desktop ou mobile');
             this.updateUploadStatus('Câmera pronta para capturar foto em desktop ou mobile.', 'success');
