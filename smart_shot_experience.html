@@ -1113,6 +1113,7 @@
       </a>
       <nav class="top-nav" aria-label="Navegação principal">
         <a href="#solution">SmartShot JOVI</a>
+        <a href="#shot_experience">Shot Experience</a>
         <a href="#instant-moments">Instant Moments</a>
         <a href="#quickshare-overlay">QuickShare Overlay</a>
         <a href="#resources">Recursos</a>
@@ -1273,6 +1274,57 @@
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section id="shot_experience" class="section shot-experience-section">
+        <div class="section-inner shot-experience-inner">
+          <div class="section-copy">
+            <span class="tag">Shot Experience</span>
+            <h2>Visualize o clique ideal antes de capturar.</h2>
+            <p>O SmartShot transforma a câmera em uma experiência guiada. A prévia reage ao tipo de cena, ao nível de luz e à estabilidade para mostrar, em tempo real, como alcançar um resultado melhor.</p>
+            <div class="shot-experience-meta" aria-label="Resumo da experiência">
+              <article class="shot-stat-card">
+                <b data-shot-label>Cena noturna</b>
+                <span data-shot-summary>Cores equilibradas, luz urbana e nitidez para fotos com pouca luz.</span>
+              </article>
+              <article class="shot-stat-card">
+                <b>Feedback inteligente</b>
+                <span data-shot-feedback>Posicione o foco no centro da ação para manter a captura mais estável.</span>
+              </article>
+            </div>
+          </div>
+          <article class="feature-card premium-card shot-lab-card" aria-label="Simulação interativa da câmera SmartShot JOVI">
+            <div class="shot-lab-head">
+              <div class="shot-mode-tabs" role="tablist" aria-label="Cenas da câmera">
+                <button type="button" class="is-active" data-scene="noturna" aria-pressed="true">Noite</button>
+                <button type="button" data-scene="selfie" aria-pressed="false">Selfie</button>
+                <button type="button" data-scene="retrato" aria-pressed="false">Retrato</button>
+                <button type="button" data-scene="show" aria-pressed="false">Show</button>
+                <button type="button" data-scene="produto" aria-pressed="false">Produto</button>
+              </div>
+              <button type="button" class="hero-cta shot-trigger">Capturar preview <span aria-hidden="true">↗</span></button>
+            </div>
+            <div class="shot-canvas-shell">
+              <canvas id="shot-experience-canvas" aria-label="Canvas com simulação da experiência SmartShot"></canvas>
+              <div class="shot-overlay-hud" aria-hidden="true">
+                <span>IA SmartShot ativa</span>
+                <span data-shot-meter>Estabilidade 72 · Luz 64</span>
+                <span data-shot-score>Score 92</span>
+              </div>
+              <div class="shot-overlay-tip" data-shot-tip>Busque pontos de luz laterais para realçar o assunto sem perder o clima da cena.</div>
+            </div>
+            <div class="shot-controls" aria-label="Ajustes da simulação">
+              <label class="shot-control">
+                <span>Estabilidade</span>
+                <input type="range" min="0" max="100" value="72" data-shot-control="stability" />
+              </label>
+              <label class="shot-control">
+                <span>Luz</span>
+                <input type="range" min="0" max="100" value="64" data-shot-control="light" />
+              </label>
+            </div>
+          </article>
         </div>
       </section>
 
@@ -2747,6 +2799,603 @@
       defaultLayer.classList.add('is-active');
       defaultLayer.setAttribute('aria-hidden', 'false');
     });
+  })();
+</script>
+
+<style>
+  .shot-experience-inner {
+    grid-template-columns: .92fr 1.08fr;
+    align-items: stretch;
+  }
+
+  .shot-experience-meta {
+    margin-top: 28px;
+    display: grid;
+    gap: 14px;
+  }
+
+  .shot-stat-card {
+    padding: 18px 20px;
+    border-radius: 24px;
+    border: 1px solid rgba(255,255,255,.12);
+    background: linear-gradient(135deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+  }
+
+  .shot-stat-card b {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--lime);
+    font-size: 14px;
+    letter-spacing: .02em;
+  }
+
+  .shot-stat-card span {
+    display: block;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .shot-lab-card {
+    min-height: 560px;
+    display: grid;
+    gap: 20px;
+    padding: 24px;
+  }
+
+  .shot-lab-head {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  .shot-mode-tabs {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .shot-mode-tabs button {
+    border: 1px solid rgba(255,255,255,.16);
+    border-radius: 999px;
+    background: rgba(255,255,255,.04);
+    color: var(--text);
+    padding: 11px 16px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease, background .22s ease, color .22s ease;
+  }
+
+  .shot-mode-tabs button:hover,
+  .shot-mode-tabs button:focus-visible,
+  .shot-mode-tabs button.is-active {
+    transform: translateY(-2px);
+    border-color: rgba(168,255,47,.55);
+    background: rgba(168,255,47,.12);
+    color: var(--lime);
+    box-shadow: 0 14px 32px rgba(168,255,47,.10);
+    outline: none;
+  }
+
+  .shot-trigger {
+    padding-inline: 18px;
+    min-height: 50px;
+    white-space: nowrap;
+  }
+
+  .shot-canvas-shell {
+    position: relative;
+    min-height: 360px;
+    border-radius: 30px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,.14);
+    background: radial-gradient(circle at top, rgba(168,255,47,.12), transparent 32%), linear-gradient(180deg, rgba(10,14,12,.9), rgba(4,6,5,.96));
+  }
+
+  #shot-experience-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 360px;
+    cursor: crosshair;
+  }
+
+  .shot-overlay-hud {
+    position: absolute;
+    top: 18px;
+    left: 18px;
+    right: 18px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    pointer-events: none;
+  }
+
+  .shot-overlay-hud span,
+  .shot-overlay-tip {
+    border: 1px solid rgba(255,255,255,.12);
+    background: rgba(3,5,4,.55);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 10px 26px rgba(0,0,0,.18);
+  }
+
+  .shot-overlay-hud span {
+    padding: 10px 14px;
+    border-radius: 999px;
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+  }
+
+  .shot-overlay-tip {
+    position: absolute;
+    left: 18px;
+    right: 18px;
+    bottom: 18px;
+    padding: 14px 16px;
+    border-radius: 20px;
+    color: var(--muted);
+    line-height: 1.45;
+    font-size: 14px;
+    pointer-events: none;
+  }
+
+  .shot-controls {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .shot-control {
+    display: grid;
+    gap: 10px;
+    padding: 16px 18px;
+    border-radius: 24px;
+    border: 1px solid rgba(255,255,255,.12);
+    background: rgba(255,255,255,.03);
+  }
+
+  .shot-control span {
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+  }
+
+  .shot-control input {
+    width: 100%;
+    accent-color: var(--lime);
+  }
+
+  @media (max-width: 980px) {
+    .shot-experience-inner,
+    .shot-controls {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .shot-lab-card {
+      min-height: auto;
+      padding: 18px;
+    }
+
+    .shot-canvas-shell,
+    #shot-experience-canvas {
+      min-height: 320px;
+    }
+
+    .shot-overlay-hud {
+      justify-content: flex-start;
+    }
+
+    .shot-overlay-tip {
+      font-size: 13px;
+    }
+  }
+</style>
+
+<script>
+  (() => {
+    const canvas = document.querySelector('#shot-experience-canvas');
+    const sceneButtons = [...document.querySelectorAll('.shot-mode-tabs button')];
+    const captureButton = document.querySelector('.shot-trigger');
+    const summary = document.querySelector('[data-shot-summary]');
+    const label = document.querySelector('[data-shot-label]');
+    const feedback = document.querySelector('[data-shot-feedback]');
+    const tip = document.querySelector('[data-shot-tip]');
+    const meter = document.querySelector('[data-shot-meter]');
+    const score = document.querySelector('[data-shot-score]');
+    const controls = {
+      stability: document.querySelector('[data-shot-control="stability"]'),
+      light: document.querySelector('[data-shot-control="light"]')
+    };
+
+    if (!canvas || !sceneButtons.length || !captureButton || !controls.stability || !controls.light) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const scenes = {
+      noturna: {
+        label: 'Cena noturna',
+        summary: 'Cores equilibradas, luz urbana e nitidez para fotos com pouca luz.',
+        tip: 'Busque pontos de luz laterais para realçar o assunto sem perder o clima da cena.',
+        feedback: 'Posicione o foco no centro da ação para manter a captura mais estável.',
+        accent: '#A8FF2F',
+        glow: '#27D7FF',
+        sky: '#09101A',
+        ideal: { x: .62, y: .42, stability: 76, light: 58 }
+      },
+      selfie: {
+        label: 'Selfie guiada',
+        summary: 'Ajuste de rosto, enquadramento e luz para destacar expressão e postura.',
+        tip: 'Levante um pouco a câmera para valorizar o rosto e equilibrar o fundo.',
+        feedback: 'Mantenha a luz frontal e aproxime o enquadramento do rosto.',
+        accent: '#FF47D3',
+        glow: '#79A7FF',
+        sky: '#140814',
+        ideal: { x: .5, y: .34, stability: 70, light: 72 }
+      },
+      retrato: {
+        label: 'Retrato premium',
+        summary: 'Separação do fundo, foco nos olhos e aparência natural para a pessoa.',
+        tip: 'Deixe a pessoa levemente fora do centro para dar profundidade ao retrato.',
+        feedback: 'A IA está buscando mais profundidade no fundo para destacar o sujeito.',
+        accent: '#FF7A1A',
+        glow: '#FF47D3',
+        sky: '#110D0B',
+        ideal: { x: .46, y: .38, stability: 80, light: 66 }
+      },
+      show: {
+        label: 'Show ao vivo',
+        summary: 'Compensação de luz intensa com congelamento do movimento no palco.',
+        tip: 'Trave o foco onde a luz principal cruza com o artista para reduzir borrões.',
+        feedback: 'Segure firme para a IA compensar melhor o movimento e o contraste.',
+        accent: '#79A7FF',
+        glow: '#B751FF',
+        sky: '#0A0818',
+        ideal: { x: .54, y: .3, stability: 84, light: 48 }
+      },
+      produto: {
+        label: 'Produto em destaque',
+        summary: 'Luz uniforme, cor fiel e composição limpa para valorizar detalhes do item.',
+        tip: 'Mantenha a iluminação homogênea para destacar textura sem reflexos agressivos.',
+        feedback: 'Centralize o produto e equilibre a luz para reforçar a sensação premium.',
+        accent: '#A8FF2F',
+        glow: '#FF7A1A',
+        sky: '#0A0D0B',
+        ideal: { x: .5, y: .46, stability: 78, light: 82 }
+      }
+    };
+
+    const state = {
+      scene: 'noturna',
+      stability: Number(controls.stability.value),
+      light: Number(controls.light.value),
+      pointerX: .62,
+      pointerY: .42,
+      pointerInside: false,
+      captureBoost: 0,
+      flash: 0,
+      lastScore: 92
+    };
+
+    const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+
+    function syncSceneMeta() {
+      const scene = scenes[state.scene];
+      label.textContent = scene.label;
+      summary.textContent = scene.summary;
+      tip.textContent = scene.tip;
+    }
+
+    function updateButtons() {
+      sceneButtons.forEach(button => {
+        const active = button.dataset.scene === state.scene;
+        button.classList.toggle('is-active', active);
+        button.setAttribute('aria-pressed', String(active));
+      });
+    }
+
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      const ratio = window.devicePixelRatio || 1;
+      canvas.width = Math.round(rect.width * ratio);
+      canvas.height = Math.round(rect.height * ratio);
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+    }
+
+    function updateScore() {
+      const scene = scenes[state.scene];
+      const dx = state.pointerX - scene.ideal.x;
+      const dy = state.pointerY - scene.ideal.y;
+      const distancePenalty = Math.min(1, Math.hypot(dx, dy) / .42) * 20;
+      const stabilityPenalty = Math.abs(state.stability - scene.ideal.stability) * .22;
+      const lightPenalty = Math.abs(state.light - scene.ideal.light) * .28;
+      state.lastScore = Math.round(clamp(99 - distancePenalty - stabilityPenalty - lightPenalty + state.captureBoost, 63, 99));
+
+      meter.textContent = `Estabilidade ${state.stability} · Luz ${state.light}`;
+      score.textContent = `Score ${state.lastScore}`;
+
+      if (state.lastScore >= 92) {
+        feedback.textContent = 'Enquadramento muito forte. A IA recomenda capturar agora.';
+      } else if (state.lastScore >= 82) {
+        feedback.textContent = 'Boa composição. Ajuste mais um pouco o foco para extrair o melhor resultado.';
+      } else if (state.lastScore >= 72) {
+        feedback.textContent = 'A cena já está legível, mas a estabilidade e a luz ainda podem melhorar.';
+      } else {
+        feedback.textContent = scene.feedback;
+      }
+    }
+
+    function drawBackground(width, height, scene, time) {
+      const gradient = ctx.createLinearGradient(0, 0, 0, height);
+      gradient.addColorStop(0, scene.sky);
+      gradient.addColorStop(1, '#040706');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, width, height);
+
+      const glow = ctx.createRadialGradient(width * .3, height * .22, 0, width * .3, height * .22, width * .42);
+      glow.addColorStop(0, `${scene.glow}55`);
+      glow.addColorStop(1, 'transparent');
+      ctx.fillStyle = glow;
+      ctx.fillRect(0, 0, width, height);
+
+      for (let i = 0; i < 18; i += 1) {
+        const x = (i * 57 + time * 18) % (width + 80) - 40;
+        const y = 36 + (i % 6) * 26;
+        ctx.fillStyle = `rgba(255,255,255,${0.04 + (i % 3) * 0.04})`;
+        ctx.beginPath();
+        ctx.arc(x, y, 1.6 + (i % 3), 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    function drawScene(width, height, scene, time) {
+      ctx.save();
+      switch (state.scene) {
+        case 'noturna': {
+          const baseY = height * .72;
+          for (let i = 0; i < 7; i += 1) {
+            const blockWidth = width * (.08 + (i % 3) * .03);
+            const blockHeight = height * (.2 + (i % 4) * .08);
+            const x = 28 + i * (blockWidth + 18);
+            ctx.fillStyle = 'rgba(8,12,18,.95)';
+            ctx.fillRect(x, baseY - blockHeight, blockWidth, blockHeight);
+            for (let w = 0; w < 8; w += 1) {
+              ctx.fillStyle = w % 2 ? 'rgba(168,255,47,.35)' : 'rgba(121,167,255,.26)';
+              ctx.fillRect(x + 10 + (w % 2) * 16, baseY - blockHeight + 14 + Math.floor(w / 2) * 22, 8, 10);
+            }
+          }
+          break;
+        }
+        case 'selfie': {
+          ctx.fillStyle = 'rgba(255,255,255,.08)';
+          ctx.beginPath();
+          ctx.ellipse(width * .5, height * .32, 56, 62, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = 'rgba(255,255,255,.13)';
+          ctx.beginPath();
+          ctx.roundRect(width * .39, height * .42, width * .22, height * .28, 48);
+          ctx.fill();
+          ctx.strokeStyle = 'rgba(255,71,211,.45)';
+          ctx.lineWidth = 4;
+          ctx.beginPath();
+          ctx.arc(width * .64, height * .24, 26 + Math.sin(time * 1.8) * 4, 0, Math.PI * 2);
+          ctx.stroke();
+          break;
+        }
+        case 'retrato': {
+          ctx.fillStyle = 'rgba(255,255,255,.10)';
+          ctx.beginPath();
+          ctx.ellipse(width * .46, height * .34, 50, 64, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = 'rgba(255,255,255,.14)';
+          ctx.beginPath();
+          ctx.roundRect(width * .35, height * .45, width * .22, height * .28, 52);
+          ctx.fill();
+          ctx.fillStyle = 'rgba(255,122,26,.16)';
+          ctx.beginPath();
+          ctx.arc(width * .72, height * .34, 70 + Math.sin(time) * 8, 0, Math.PI * 2);
+          ctx.fill();
+          break;
+        }
+        case 'show': {
+          for (let i = 0; i < 4; i += 1) {
+            const beamX = width * (.2 + i * .18);
+            const beamWidth = 50 + Math.sin(time * 1.2 + i) * 12;
+            const beam = ctx.createLinearGradient(beamX, height * .05, beamX, height * .72);
+            beam.addColorStop(0, i % 2 ? 'rgba(121,167,255,.45)' : 'rgba(183,81,255,.45)');
+            beam.addColorStop(1, 'rgba(255,255,255,0)');
+            ctx.fillStyle = beam;
+            ctx.beginPath();
+            ctx.moveTo(beamX, height * .08);
+            ctx.lineTo(beamX - beamWidth, height * .72);
+            ctx.lineTo(beamX + beamWidth, height * .72);
+            ctx.closePath();
+            ctx.fill();
+          }
+          ctx.fillStyle = 'rgba(255,255,255,.16)';
+          for (let i = 0; i < 24; i += 1) {
+            ctx.beginPath();
+            ctx.arc(20 + i * 22, height * .82 + Math.sin(i + time * 2) * 4, 3 + (i % 3), 0, Math.PI * 2);
+            ctx.fill();
+          }
+          break;
+        }
+        case 'produto': {
+          ctx.fillStyle = 'rgba(255,255,255,.05)';
+          ctx.beginPath();
+          ctx.roundRect(width * .22, height * .68, width * .56, 22, 12);
+          ctx.fill();
+          ctx.fillStyle = 'rgba(255,255,255,.12)';
+          ctx.beginPath();
+          ctx.roundRect(width * .38, height * .3, width * .24, height * .32, 24);
+          ctx.fill();
+          ctx.strokeStyle = 'rgba(168,255,47,.45)';
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.roundRect(width * .35, height * .27, width * .30, height * .38, 28);
+          ctx.stroke();
+          break;
+        }
+        default:
+          break;
+      }
+      ctx.restore();
+    }
+
+    function drawInterface(width, height, scene, time) {
+      ctx.save();
+      ctx.strokeStyle = 'rgba(255,255,255,.10)';
+      ctx.lineWidth = 1;
+      [1 / 3, 2 / 3].forEach(step => {
+        ctx.beginPath();
+        ctx.moveTo(width * step, 0);
+        ctx.lineTo(width * step, height);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(0, height * step);
+        ctx.lineTo(width, height * step);
+        ctx.stroke();
+      });
+
+      const targetX = width * scene.ideal.x;
+      const targetY = height * scene.ideal.y;
+      const focusX = width * state.pointerX;
+      const focusY = height * state.pointerY;
+
+      ctx.strokeStyle = `${scene.accent}AA`;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.roundRect(targetX - 66, targetY - 84, 132, 168, 26);
+      ctx.stroke();
+
+      ctx.strokeStyle = state.lastScore >= 86 ? `${scene.accent}` : '#FF47D3';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(focusX, focusY, 26 + Math.sin(time * 2.6) * 3, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(focusX - 40, focusY);
+      ctx.lineTo(focusX - 18, focusY);
+      ctx.moveTo(focusX + 18, focusY);
+      ctx.lineTo(focusX + 40, focusY);
+      ctx.moveTo(focusX, focusY - 40);
+      ctx.lineTo(focusX, focusY - 18);
+      ctx.moveTo(focusX, focusY + 18);
+      ctx.lineTo(focusX, focusY + 40);
+      ctx.stroke();
+
+      const bars = 14;
+      const barY = height - 48;
+      for (let i = 0; i < bars; i += 1) {
+        const value = .24 + Math.max(0, Math.sin(time * 2.2 + i * .6)) * .76;
+        const barHeight = 12 + value * 34;
+        ctx.fillStyle = i / bars <= state.lastScore / 100 ? `${scene.accent}CC` : 'rgba(255,255,255,.12)';
+        ctx.beginPath();
+        ctx.roundRect(24 + i * 20, barY - barHeight, 12, barHeight, 8);
+        ctx.fill();
+      }
+
+      ctx.fillStyle = 'rgba(255,255,255,.75)';
+      ctx.font = '700 14px Inter, Arial, sans-serif';
+      ctx.fillText(scene.label.toUpperCase(), 24, 34);
+      ctx.fillText('GRID IA · FOCO DINÂMICO', width - 208, 34);
+
+      ctx.restore();
+    }
+
+    function renderFrame(timeMs) {
+      const rect = canvas.getBoundingClientRect();
+      const width = rect.width;
+      const height = rect.height;
+      const time = timeMs / 1000;
+      const scene = scenes[state.scene];
+
+      if (!width || !height) {
+        requestAnimationFrame(renderFrame);
+        return;
+      }
+
+      drawBackground(width, height, scene, time);
+      drawScene(width, height, scene, time);
+      drawInterface(width, height, scene, time);
+
+      if (state.flash > 0) {
+        ctx.fillStyle = `rgba(255,255,255,${state.flash})`;
+        ctx.fillRect(0, 0, width, height);
+        state.flash = Math.max(0, state.flash - .035);
+      }
+
+      state.captureBoost = Math.max(0, state.captureBoost - .08);
+      updateScore();
+      requestAnimationFrame(renderFrame);
+    }
+
+    function setScene(nextScene) {
+      if (!scenes[nextScene]) return;
+      state.scene = nextScene;
+      const ideal = scenes[nextScene].ideal;
+      state.pointerX = ideal.x;
+      state.pointerY = ideal.y;
+      syncSceneMeta();
+      updateButtons();
+      updateScore();
+    }
+
+    function syncControlValues() {
+      state.stability = Number(controls.stability.value);
+      state.light = Number(controls.light.value);
+      updateScore();
+    }
+
+    sceneButtons.forEach(button => {
+      button.addEventListener('click', () => setScene(button.dataset.scene));
+    });
+
+    Object.values(controls).forEach(control => {
+      control.addEventListener('input', syncControlValues);
+    });
+
+    canvas.addEventListener('pointermove', event => {
+      const rect = canvas.getBoundingClientRect();
+      state.pointerInside = true;
+      state.pointerX = clamp((event.clientX - rect.left) / rect.width, .08, .92);
+      state.pointerY = clamp((event.clientY - rect.top) / rect.height, .12, .88);
+      updateScore();
+    });
+
+    canvas.addEventListener('pointerleave', () => {
+      const ideal = scenes[state.scene].ideal;
+      state.pointerInside = false;
+      state.pointerX += (ideal.x - state.pointerX) * .16;
+      state.pointerY += (ideal.y - state.pointerY) * .16;
+      updateScore();
+    });
+
+    captureButton.addEventListener('click', () => {
+      state.captureBoost = 6;
+      state.flash = .35;
+      tip.textContent = `Preview capturado com score ${state.lastScore}. ${scenes[state.scene].tip}`;
+      updateScore();
+    });
+
+    resizeCanvas();
+    syncSceneMeta();
+    updateButtons();
+    updateScore();
+    window.addEventListener('resize', resizeCanvas);
+    requestAnimationFrame(renderFrame);
   })();
 </script>
 
