@@ -1089,6 +1089,7 @@
       window.addEventListener('pagehide', cleanup, { once: true });
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'hidden') this.stopCameraStream();
+        if (document.visibilityState === 'visible' && this.state.smartshotAtivo) void this.ensureCameraReady();
       });
     }
 
