@@ -1039,14 +1039,21 @@
       const blob = await new Promise(resolve => this.captureCanvas.toBlob(resolve, 'image/jpeg', 0.92));
       if (!blob) return null;
       const timestamp = Date.now();
-      return new File([blob], `smartshot-${timestamp}.jpg`, { type: 'image/jpeg', lastModified: timestamp });
+      return {
+        blob,
+        name: `smartshot-${timestamp}.jpg`,
+        type: 'image/jpeg',
+        lastModified: timestamp
+      };
     }
 
-    syncFileInput(file) {
-      if (!this.fileInput || !file || typeof DataTransfer === 'undefined') return;
-      const transfer = new DataTransfer();
-      transfer.items.add(file);
-      this.fileInput.files = transfer.files;
+    getSelectedFileName(file) {
+      return file?.name || file?.blob?.name || 'captura-smartshot.jpg';
+    }
+
+    resolveSelectedBlob(file) {
+      if (!file) return null;
+      return file instanceof Blob ? file : file.blob instanceof Blob ? file.blob : null;
     }
 
     updateThumbPreviews(url) {
@@ -1110,7 +1117,6 @@
       this.updateGuideByMode();
       const capturedFile = await this.capturePhotoFile();
       if (!capturedFile) return false;
-      this.syncFileInput(capturedFile);
       this.handleFileSelection(capturedFile);
       const qualidade = ['Alta', 'Alta', 'Média'][Math.floor(Math.random() * 3)];
       this.state.qualidade = qualidade;
@@ -1246,7 +1252,7 @@
       this.state.selectedFile = file || null;
       this.state.uploadedMedia = null;
       this.state.galleryLinked = false;
-      if (this.uploadMediaPill) this.uploadMediaPill.textContent = file ? `Arquivo pronto: ${file.name}` : 'MIDIA aguardando upload';
+      if (this.uploadMediaPill) this.uploadMediaPill.textContent = file ? `Arquivo pronto: ${this.getSelectedFileName(file)}` : 'MIDIA aguardando upload';
       if (this.uploadGalleryPill) this.uploadGalleryPill.textContent = 'Daily Gallery sem item sincronizado';
       if (!file) {
         this.updateThumbPreviews('');
@@ -1254,11 +1260,16 @@
         return;
       }
       if (this.state.previewObjectUrl) URL.revokeObjectURL(this.state.previewObjectUrl);
-      this.state.previewObjectUrl = URL.createObjectURL(file);
+      const previewBlob = this.resolveSelectedBlob(file);
+      if (!previewBlob) {
+        this.updateUploadStatus('A captura gerada não é suportada neste navegador.', 'error');
+        return;
+      }
+      this.state.previewObjectUrl = URL.createObjectURL(previewBlob);
       this.setPreviewImage(this.state.previewObjectUrl);
       this.setGalleryPreview(this.state.previewObjectUrl);
       this.updateThumbPreviews(this.state.previewObjectUrl);
-      this.updateUploadStatus(`Arquivo ${file.name} pronto para upload no backend Java.`, 'info');
+      this.updateUploadStatus(`Arquivo ${this.getSelectedFileName(file)} pronto para upload no backend Java.`, 'info');
       this.setShareStatus('arquivo carregado localmente');
     }
 
@@ -1278,13 +1289,19 @@
         this.updateUploadStatus('Selecione uma imagem antes de chamar a API Java.', 'error');
         return null;
       }
+      const uploadBlob = this.resolveSelectedBlob(this.state.selectedFile);
+      if (!uploadBlob) {
+        this.updateUploadStatus('A mídia selecionada não pôde ser preparada para upload.', 'error');
+        return null;
+      }
+      const uploadFileName = this.getSelectedFileName(this.state.selectedFile);
       const formData = new FormData();
-      formData.append('file', this.state.selectedFile);
+      formData.append('file', uploadBlob, uploadFileName);
       formData.append('userId', '1');
       formData.append('mode', this.state.modo);
       formData.append('quality', this.state.qualidade);
       formData.append('captureType', 'smartshot-web');
-      this.updateUploadStatus(`Enviando ${this.state.selectedFile.name} para ${this.resolveApiBase()}...`, 'loading');
+      this.updateUploadStatus(`Enviando ${uploadFileName} para ${this.resolveApiBase()}...`, 'loading');
       try {
         const upload = await this.fetchJson(this.buildApiUrl('/api/uploads'), { method: 'POST', body: formData });
         this.applyUploadResult(upload);
