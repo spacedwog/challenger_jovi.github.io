@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Challenge JOVI | Landing Page de Soluções</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
     :root {
       --bg: #050c1f;
@@ -166,7 +167,6 @@
 
     .preview-frame {
       width: 100%;
-      height: 300px;
       border: 1px solid var(--line);
       border-radius: 12px;
       background: #020712;
@@ -211,7 +211,6 @@
 
     .demo-stage iframe {
       width: 100%;
-      height: 560px;
       border: 0;
       border-radius: 12px;
       background: #030915;
@@ -239,27 +238,27 @@
   </style>
 </head>
 <body>
-  <header class="container">
+  <header class="container px-4 sm:px-6 lg:px-0">
     <span class="eyebrow">Challenge JOVI</span>
     <h1>Landing Page com todas as soluções do projeto</h1>
     <p class="lead">
       Esta página centraliza e demonstra todas as entregas: experiência principal SmartShot, protótipo mobile de telas e modelo lógico de dados (MER), com preview e acesso direto.
     </p>
 
-    <div class="kpis">
+    <div class="kpis grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
       <div class="kpi"><strong>3</strong>Soluções integradas</div>
       <div class="kpi"><strong>6+</strong>Funcionalidades de câmera inteligente</div>
       <div class="kpi"><strong>100%</strong>Demonstração navegável</div>
     </div>
   </header>
 
-  <main class="container">
-    <section class="section" id="solucao-smartshot">
-      <div class="section-head">
+  <main class="container px-4 sm:px-6 lg:px-0">
+    <section class="section my-6 sm:my-8" id="solucao-smartshot">
+      <div class="section-head p-4 sm:p-5">
         <h2>1) SmartShot Experience (solução principal)</h2>
         <p>Experiência completa com pitch, modos inteligentes, canvas interativo, assistente de pose, Instant Moments, QuickShare e Daily Gallery.</p>
       </div>
-      <div class="section-body">
+      <div class="section-body grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 p-4 sm:p-5">
         <div>
           <span class="badge">Modos inteligentes</span>
           <span class="badge">Shot Experience em Canvas</span>
@@ -272,21 +271,21 @@
             <li><span class="ok">✓</span> Simulação em tempo real com controle de foco via teclado e botões</li>
             <li><span class="ok">✓</span> Fluxo de apresentação com impacto para usuário e marca</li>
           </ul>
-          <div class="actions">
-            <a class="btn" href="./smart_shot_experience.html" target="_blank" rel="noopener">Abrir página completa</a>
-            <a class="btn secondary" href="#demo">Testar no demonstrador abaixo</a>
+          <div class="actions flex-col sm:flex-row">
+            <a class="btn w-full text-center sm:w-auto" href="./smart_shot_experience.html" target="_blank" rel="noopener">Abrir página completa</a>
+            <a class="btn secondary w-full text-center sm:w-auto" href="#demo">Testar no demonstrador abaixo</a>
           </div>
         </div>
-        <iframe class="preview-frame" src="./smart_shot_experience.html" title="Preview SmartShot Experience" loading="lazy"></iframe>
+        <iframe class="preview-frame h-[220px] sm:h-[300px]" src="./smart_shot_experience.html" title="Preview SmartShot Experience" loading="lazy"></iframe>
       </div>
     </section>
 
-    <section class="section" id="solucao-prototipo">
-      <div class="section-head">
+    <section class="section my-6 sm:my-8" id="solucao-prototipo">
+      <div class="section-head p-4 sm:p-5">
         <h2>2) Protótipo Web Mobile (telas da jornada)</h2>
         <p>Conjunto de telas mobile-first mostrando a jornada da câmera e interações por etapa.</p>
       </div>
-      <div class="section-body">
+      <div class="section-body grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 p-4 sm:p-5">
         <div>
           <span class="badge">Tela 01: Captura</span>
           <span class="badge">Tela 02: Modos</span>
@@ -299,21 +298,21 @@
             <li><span class="ok">✓</span> Storytelling de produto por telas sequenciais</li>
             <li><span class="ok">✓</span> Visual premium e coerente com o ecossistema JOVI</li>
           </ul>
-          <div class="actions">
-            <a class="btn" href="./smartshot_jovi_telas.html" target="_blank" rel="noopener">Abrir protótipo</a>
-            <a class="btn secondary" href="#demo">Ver no demonstrador</a>
+          <div class="actions flex-col sm:flex-row">
+            <a class="btn w-full text-center sm:w-auto" href="./smartshot_jovi_telas.html" target="_blank" rel="noopener">Abrir protótipo</a>
+            <a class="btn secondary w-full text-center sm:w-auto" href="#demo">Ver no demonstrador</a>
           </div>
         </div>
-        <iframe class="preview-frame" src="./smartshot_jovi_telas.html" title="Preview protótipo mobile" loading="lazy"></iframe>
+        <iframe class="preview-frame h-[220px] sm:h-[300px]" src="./smartshot_jovi_telas.html" title="Preview protótipo mobile" loading="lazy"></iframe>
       </div>
     </section>
 
-    <section class="section" id="solucao-mer">
-      <div class="section-head">
+    <section class="section my-6 sm:my-8" id="solucao-mer">
+      <div class="section-head p-4 sm:p-5">
         <h2>3) MER Visual Corrigido (estrutura de dados)</h2>
         <p>Modelo lógico com entidades, cardinalidades e relações para sustentar SmartShot, QuickShare, Album e Daily Gallery.</p>
       </div>
-      <div class="section-body">
+      <div class="section-body grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 p-4 sm:p-5">
         <div>
           <span class="badge">USUARIO</span>
           <span class="badge">DISPOSITIVO</span>
@@ -328,23 +327,23 @@
             <li><span class="ok">✓</span> Entidades de suporte ao ciclo completo da foto</li>
             <li><span class="ok">✓</span> Base pronta para implementação back-end</li>
           </ul>
-          <div class="actions">
-            <a class="btn" href="./mer_jovi_visual_corrigido.html" target="_blank" rel="noopener">Abrir MER</a>
-            <a class="btn secondary" href="#demo">Ver no demonstrador</a>
+          <div class="actions flex-col sm:flex-row">
+            <a class="btn w-full text-center sm:w-auto" href="./mer_jovi_visual_corrigido.html" target="_blank" rel="noopener">Abrir MER</a>
+            <a class="btn secondary w-full text-center sm:w-auto" href="#demo">Ver no demonstrador</a>
           </div>
         </div>
-        <iframe class="preview-frame" src="./mer_jovi_visual_corrigido.html" title="Preview MER visual" loading="lazy"></iframe>
+        <iframe class="preview-frame h-[220px] sm:h-[300px]" src="./mer_jovi_visual_corrigido.html" title="Preview MER visual" loading="lazy"></iframe>
       </div>
     </section>
 
-    <section class="demo" id="demo">
-      <div class="demo-head" role="tablist" aria-label="Demonstração unificada das soluções">
-        <button class="demo-tab active" data-src="./smart_shot_experience.html" data-caption="Demonstração da solução principal SmartShot Experience.">SmartShot Experience</button>
-        <button class="demo-tab" data-src="./smartshot_jovi_telas.html" data-caption="Demonstração do protótipo mobile com as telas da jornada.">Protótipo Mobile</button>
-        <button class="demo-tab" data-src="./mer_jovi_visual_corrigido.html" data-caption="Demonstração do MER visual corrigido com as entidades e relações do projeto.">MER Visual</button>
+    <section class="demo my-8 sm:my-10" id="demo">
+      <div class="demo-head flex-col sm:flex-row" role="tablist" aria-label="Demonstração unificada das soluções">
+        <button class="demo-tab active w-full text-left sm:w-auto sm:text-center" data-src="./smart_shot_experience.html" data-caption="Demonstração da solução principal SmartShot Experience.">SmartShot Experience</button>
+        <button class="demo-tab w-full text-left sm:w-auto sm:text-center" data-src="./smartshot_jovi_telas.html" data-caption="Demonstração do protótipo mobile com as telas da jornada.">Protótipo Mobile</button>
+        <button class="demo-tab w-full text-left sm:w-auto sm:text-center" data-src="./mer_jovi_visual_corrigido.html" data-caption="Demonstração do MER visual corrigido com as entidades e relações do projeto.">MER Visual</button>
       </div>
       <div class="demo-stage">
-        <iframe id="demoFrame" src="./smart_shot_experience.html" title="Demonstrador de soluções JOVI"></iframe>
+        <iframe id="demoFrame" class="h-[320px] sm:h-[420px] lg:h-[560px]" src="./smart_shot_experience.html" title="Demonstrador de soluções JOVI"></iframe>
       </div>
       <p id="demoCaption" class="demo-caption">Demonstração da solução principal SmartShot Experience.</p>
     </section>
