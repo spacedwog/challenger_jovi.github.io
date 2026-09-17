@@ -1260,7 +1260,7 @@
               <button type="button" class="shot-chip" data-scene="1" aria-pressed="false">Retrato</button>
               <button type="button" class="shot-chip" data-scene="2" aria-pressed="false">Produto</button>
             </div>
-            <canvas id="shotExperienceCanvas" width="960" height="460" tabindex="0" role="application" aria-label="Pré-visualização interativa SmartShot" aria-describedby="shotCanvasHelp">
+            <canvas id="shotExperienceCanvas" width="960" height="460" tabindex="0" aria-label="Pré-visualização interativa SmartShot" aria-describedby="shotCanvasHelp">
               Seu navegador não suporta canvas.
             </canvas>
             <div class="shot-focus-controls" role="group" aria-label="Mover foco da pré-visualização">
@@ -3166,8 +3166,10 @@
     window.addEventListener('resize', handleResize);
     if (prefersReducedMotion) drawFrame();
     else {
-      drawFrame();
-      if (!usesVisibilityObserver) startRenderLoop();
+      if (!usesVisibilityObserver) {
+        drawFrame();
+        startRenderLoop();
+      }
     }
     window.addEventListener('beforeunload', teardown);
   })();
