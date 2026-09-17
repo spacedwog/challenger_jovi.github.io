@@ -1085,8 +1085,11 @@
 
     bindLifecycle() {
       const cleanup = () => this.stopCameraStream();
-      window.addEventListener('beforeunload', cleanup, { once: true });
-      window.addEventListener('pagehide', cleanup, { once: true });
+      window.addEventListener('beforeunload', cleanup);
+      window.addEventListener('pagehide', cleanup);
+      window.addEventListener('pageshow', () => {
+        if (this.state.smartshotAtivo) void this.ensureCameraReady();
+      });
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'hidden') this.stopCameraStream();
         if (document.visibilityState === 'visible' && this.state.smartshotAtivo) void this.ensureCameraReady();
