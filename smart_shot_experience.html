@@ -2013,6 +2013,11 @@
     color: #C8FF5A;
   }
 
+  .shot-chip:focus-visible {
+    outline: 2px solid #C8FF5A;
+    outline-offset: 2px;
+  }
+
   .shot-status-text {
     margin: 10px 6px 2px;
     color: #A9C7FF;
@@ -2931,12 +2936,12 @@
       return `rgba(${r}, ${g}, ${b}, ${alpha})`;
     }
 
-    function updateStatus(announce = true) {
+    function updateStatus(announce = true, updateVisible = true) {
       const scene = scenes[sceneIndex];
       const x = Math.round(mx * 100);
       const y = Math.round(my * 100);
       const message = `${scene.label}. Foco em ${x}% horizontal e ${y}% vertical.`;
-      if (status) status.textContent = message;
+      if (updateVisible && status) status.textContent = message;
       if (announce && liveStatus) liveStatus.textContent = message;
     }
 
@@ -3064,7 +3069,7 @@
       const rect = canvasRect || canvas.getBoundingClientRect();
       mx = Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width));
       my = Math.min(1, Math.max(0, (event.clientY - rect.top) / rect.height));
-      updateStatus(false);
+      updateStatus(false, false);
       if (prefersReducedMotion || !isAnimating) drawFrame();
     });
 
