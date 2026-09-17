@@ -1051,6 +1051,13 @@
         return null;
       }
       const timestamp = Date.now();
+      try {
+        return new File([blob], `smartshot-${timestamp}.jpg`, {
+          type: 'image/jpeg',
+          lastModified: timestamp
+        });
+      } catch (_) {
+      }
       return {
         blob,
         name: `smartshot-${timestamp}.jpg`,
